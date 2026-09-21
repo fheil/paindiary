@@ -7,7 +7,7 @@ RUN npm install --omit=dev
 FROM node:22-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/* \
     && groupadd --system app && useradd --system --gid app app \
     && mkdir -p /app/data && chown -R app:app /app
 COPY --from=deps /app/node_modules ./node_modules

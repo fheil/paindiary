@@ -13,7 +13,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - FRONTEND_URL=https://${DOMAIN}
     volumes:
-      - backend-data:/app/data
+      - ${BASE_DIR}/${BINDS}:/app/data
     networks:
       - traefik-net
     expose:
@@ -56,9 +56,6 @@ services:
       retries: 3
     depends_on:
       - paindiary-backend
-
-volumes:
-  backend-data:
 
 networks:
   traefik-net:

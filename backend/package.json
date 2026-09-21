@@ -1,5 +1,5 @@
 {
-  "name": "schmerztagebuch-backend",
+  "name": "paindiary-backend",
   "version": "1.0.0",
   "description": "Backend für die Schmerztagebuch Webanwendung",
   "main": "server.js",

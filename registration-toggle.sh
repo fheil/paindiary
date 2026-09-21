@@ -5,7 +5,7 @@
 #
 # Verwendung: ./registration-toggle.sh [on|off|status]
 
-CONTAINER="schmerztagebuch-backend"
+CONTAINER="paindiary-backend"
 SCRIPT="toggle-registration.js"
 
 print_help() {

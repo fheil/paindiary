@@ -1,16 +1,16 @@
 services:
-  schmerztagebuch-backend:
+  paindiary-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: schmerztagebuch-backend
+    container_name: paindiary-backend
     restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV}
-      # NOTE: frontend/nginx.conf hardcodes "schmerztagebuch-backend:8030" at build time
+      # NOTE: frontend/nginx.conf hardcodes "paindiary-backend:8030" at build time
       # and does NOT read this variable. If you change PORT, update nginx.conf too.
       - PORT=${PORT}
-      - DATABASE_PATH=/app/data/schmerztagebuch.db
+      - DATABASE_PATH=/app/data/paindiary.db
       - JWT_SECRET=${JWT_SECRET}
       - FRONTEND_URL=https://${DOMAIN}
     volumes:
@@ -21,25 +21,25 @@ services:
       - "${PORT}"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.schmerztagebuch-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.schmerztagebuch-api.entrypoints=websecure"
-      - "traefik.http.routers.schmerztagebuch-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.schmerztagebuch-api.loadbalancer.server.port=${PORT}"
+      - "traefik.http.routers.paindiary-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.paindiary-api.entrypoints=websecure"
+      - "traefik.http.routers.paindiary-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.paindiary-api.loadbalancer.server.port=${PORT}"
       - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
-      - "traefik.http.routers.schmerztagebuch-api.middlewares=api-stripprefix"
+      - "traefik.http.routers.paindiary-api.middlewares=api-stripprefix"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${PORT}/health"]
       interval: 30s
       timeout: 5s
       retries: 3
 
-  schmerztagebuch-frontend:
+  paindiary-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         VITE_API_URL: https://${DOMAIN}/api
-    container_name: schmerztagebuch-frontend
+    container_name: paindiary-frontend
     restart: unless-stopped
     networks:
       - traefik-net
@@ -47,18 +47,18 @@ services:
       - "80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.schmerztagebuch.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.schmerztagebuch.entrypoints=websecure"
-      - "traefik.http.routers.schmerztagebuch.tls.certresolver=letsencrypt"
-      - "traefik.http.services.schmerztagebuch.loadbalancer.server.port=80"
-      - "traefik.http.routers.schmerztagebuch.priority=1"
+      - "traefik.http.routers.paindiary.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.paindiary.entrypoints=websecure"
+      - "traefik.http.routers.paindiary.tls.certresolver=letsencrypt"
+      - "traefik.http.services.paindiary.loadbalancer.server.port=80"
+      - "traefik.http.routers.paindiary.priority=1"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/"]
       interval: 30s
       timeout: 5s
       retries: 3
     depends_on:
-      - schmerztagebuch-backend
+      - paindiary-backend
 
 volumes:
   backend-data:

@@ -5,7 +5,7 @@ import path from 'node:path';
 const dataDir = process.env.DATA_DIR || '/app/data';
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const dbPath = path.join(dataDir, 'schmerztagebuch.db');
+const dbPath = path.join(dataDir, 'paindiary.db');
 const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');

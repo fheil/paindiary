@@ -21,7 +21,7 @@ app.use((req, _res, next) => {
 });
 
 // Health-Check für Traefik
-app.get('/health', (_req, res) => res.json({ ok: true, service: 'schmerztagebuch-backend', time: new Date().toISOString() }));
+app.get('/health', (_req, res) => res.json({ ok: true, service: 'paindiary-backend', time: new Date().toISOString() }));
 
 // Routes
 app.use('/api/auth', authRoutes);

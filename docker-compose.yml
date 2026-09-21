@@ -10,7 +10,6 @@ services:
       # NOTE: frontend/nginx.conf hardcodes "paindiary-backend:8030" at build time
       # and does NOT read this variable. If you change PORT, update nginx.conf too.
       - PORT=${PORT}
-      - DATABASE_PATH=/app/data/paindiary.db
       - JWT_SECRET=${JWT_SECRET}
       - FRONTEND_URL=https://${DOMAIN}
     volumes:

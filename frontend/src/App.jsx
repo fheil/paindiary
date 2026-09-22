@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, BarChart3, Calendar, LogOut, Plus, Share2 } from 'lucide-react';
+import { Activity, BarChart3, Calendar, LogOut, Plus, Share2, Table } from 'lucide-react';
 import './styles.css';
 import { api } from './api';
 import Auth from './components/Auth';
 import EntryForm from './components/EntryForm';
 import EntryCard from './components/EntryCard';
 import SharesTab from './components/SharesTab';
+import WeeklyTable from './components/WeeklyTable';
 
 function MainApp({ user, logout }) {
   const [entries, setEntries] = useState([]);
@@ -116,6 +117,9 @@ function MainApp({ user, logout }) {
         <button className={tab === 'dashboard' ? 'active' : ''} onClick={() => setTab('dashboard')}>
           <BarChart3 size={17} /> Dashboard
         </button>
+        <button className={tab === 'table' ? 'active' : ''} onClick={() => setTab('table')}>
+          <Table size={17} /> Tabellenblatt
+        </button>
         <button className={tab === 'shares' ? 'active' : ''} onClick={() => setTab('shares')}>
           <Share2 size={17} /> Freigaben
         </button>
@@ -215,6 +219,8 @@ function MainApp({ user, logout }) {
             )}
           </div>
         )}
+
+        {tab === 'table' && <WeeklyTable entries={displayedEntries} />}
 
         {tab === 'shares' && <SharesTab user={user} onError={setError} />}
       </main>

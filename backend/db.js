@@ -50,4 +50,9 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT OR IGNORE INTO settings (key, value) VALUES ('registration_enabled', 'true');
 `);
 
+const entryColumns = db.prepare("PRAGMA table_info(entries)").all().map(c => c.name);
+if (!entryColumns.includes('medication')) {
+  db.exec("ALTER TABLE entries ADD COLUMN medication TEXT NOT NULL DEFAULT ''");
+}
+
 export default db;

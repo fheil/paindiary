@@ -8,13 +8,14 @@ const FIELD_CONFIG = [
   { field: 'body_reaction', label: 'Begleitende Körperreaktionen', placeholder: 'z. B. Verspannung, Schwitzen, Übelkeit' },
   { field: 'thoughts', label: 'Gedanken', placeholder: 'Was dachtest du in dem Moment?' },
   { field: 'feeling', label: 'Gefühl', placeholder: 'Welches Gefühl hattest du?' },
-  { field: 'behavior', label: 'Verhalten', placeholder: 'Wie hast du reagiert? Was hast du gemacht?' }
+  { field: 'behavior', label: 'Verhalten', placeholder: 'Wie hast du reagiert? Was hast du gemacht?' },
+  { field: 'medication', label: 'Medikamente', placeholder: 'z. B. Ibuprofen 400mg' }
 ];
 
 export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
   const [form, setForm] = useState(initial || blank());
   const [suggestions, setSuggestions] = useState({
-    situation: [], body_reaction: [], thoughts: [], feeling: [], behavior: []
+    medication: [], situation: [], body_reaction: [], thoughts: [], feeling: [], behavior: []
   });
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [error, setError] = useState('');

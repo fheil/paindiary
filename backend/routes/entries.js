@@ -5,7 +5,7 @@ import { authenticate } from '../auth-middleware.js';
 const router = Router();
 router.use(authenticate);
 
-const fields = ['occurred_at', 'pain_level', 'situation', 'body_reaction', 'thoughts', 'feeling', 'behavior'];
+const fields = ['occurred_at', 'pain_level', 'situation', 'body_reaction', 'thoughts', 'feeling', 'behavior', 'medication'];
 
 function readableUserIds(userId) {
   return [userId, ...db.prepare('SELECT owner_id FROM shares WHERE viewer_id = ?').all(userId).map(x => x.owner_id)];
@@ -24,7 +24,7 @@ router.post('/', (req, res) => {
   if (!b.occurred_at) return res.status(400).json({ error: 'Datum und Uhrzeit erforderlich.' });
   
   const info = db.prepare(
-    'INSERT INTO entries (user_id, occurred_at, pain_level, situation, body_reaction, thoughts, feeling, behavior) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO entries (user_id, occurred_at, pain_level, situation, body_reaction, thoughts, feeling, behavior, medication) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     req.user.id,
     b.occurred_at,
@@ -33,7 +33,8 @@ router.post('/', (req, res) => {
     b.body_reaction || '',
     b.thoughts || '',
     b.feeling || '',
-    b.behavior || ''
+    b.behavior || '',
+    b.medication || ''
   );
   
   res.status(201).json(db.prepare('SELECT * FROM entries WHERE id=?').get(info.lastInsertRowid));

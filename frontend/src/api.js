@@ -21,5 +21,6 @@ export const blank = () => ({
   body_reaction: '',
   thoughts: '',
   feeling: '',
-  behavior: ''
+  behavior: '',
+  medication: ''
 });

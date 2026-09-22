@@ -27,6 +27,9 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
           <strong>Verhalten:</strong> {entry.behavior || '–'}
         </p>
+        <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
+          <strong>Medikamente:</strong> {entry.medication || '–'}
+        </p>
       </div>
       <div className="entry-actions">
         <button className="icon" onClick={() => onEdit(entry)}>

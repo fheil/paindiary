@@ -78,6 +78,7 @@ function MainApp({ user, logout }) {
 
   return (
     <div className="app">
+      <div className="app-top">
       <header>
         <div className="top-brand">
           <div className="brand-mark small">
@@ -124,6 +125,7 @@ function MainApp({ user, logout }) {
           <Share2 size={17} /> Freigaben
         </button>
       </nav>
+      </div>
 
       <main>
         {error && (

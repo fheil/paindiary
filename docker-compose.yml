@@ -57,9 +57,9 @@ services:
     depends_on:
       - paindiary-backend
 
-  sqlite-web:
+  paindiary-sqlite-web:
     image: coleifer/sqlite-web
-    container_name: sqlite-web-paindiary
+    container_name: paindiary-sqlite-web
     restart: always
     profiles: ["tools"]
     user: "999:999"

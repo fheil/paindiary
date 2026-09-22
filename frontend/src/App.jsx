@@ -237,7 +237,7 @@ export default function App() {
   useEffect(() => {
     if (localStorage.token) {
       api('/auth/me')
-        .then(setUser)
+        .then(d => setUser(d.user))
         .catch(() => {
           localStorage.removeItem('token');
         });

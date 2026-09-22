@@ -1064,6 +1064,10 @@ main {
   background: var(--teal-50);
 }
 
+.weekly-table .day-end {
+  border-right: 2px solid var(--teal-700);
+}
+
 .weekly-table .pain-cell {
   font-weight: 700;
   color: #fff;

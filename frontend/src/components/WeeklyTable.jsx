@@ -168,7 +168,7 @@ export default function WeeklyTable({ entries }) {
           <thead>
             <tr>
               <th>Uhrzeit</th>
-              {DAY_NAMES.map(d => <th key={d} colSpan={3}>{d}</th>)}
+              {DAY_NAMES.map(d => <th key={d} colSpan={3} className="day-end">{d}</th>)}
             </tr>
             <tr>
               <th></th>
@@ -176,7 +176,7 @@ export default function WeeklyTable({ entries }) {
                 <React.Fragment key={d}>
                   <th className="sub">S</th>
                   <th className="sub">M</th>
-                  <th className="sub">A</th>
+                  <th className="sub day-end">A</th>
                 </React.Fragment>
               ))}
             </tr>
@@ -191,7 +191,7 @@ export default function WeeklyTable({ entries }) {
                     <React.Fragment key={dayIndex}>
                       <td className={`pain-cell ${painClass(cell?.pain)}`}>{cell?.pain ?? ''}</td>
                       <td>{cell?.medLetter || ''}</td>
-                      <td>{cell?.actLetter || ''}</td>
+                      <td className="day-end">{cell?.actLetter || ''}</td>
                     </React.Fragment>
                   );
                 })}

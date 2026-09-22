@@ -13,7 +13,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - FRONTEND_URL=https://${DOMAIN}
     volumes:
-      - ${BASE_DIR}/${BINDS}:/app/data
+      - ${BASE_DIR}/${BINDS}/data:/app/data
     networks:
       - traefik-net
     expose:

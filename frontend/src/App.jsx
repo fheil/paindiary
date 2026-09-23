@@ -1,17 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, BarChart3, Calendar, LogOut, Plus, Share2, Table } from 'lucide-react';
+import { Activity, BarChart3, Calendar, LogOut, Share2, Table } from 'lucide-react';
 import './styles.css';
 import { api } from './api';
 import Auth from './components/Auth';
-import EntryForm from './components/EntryForm';
-import EntryCard from './components/EntryCard';
+import JournalTab from './components/JournalTab';
 import SharesTab from './components/SharesTab';
 import WeeklyTable from './components/WeeklyTable';
 
 function MainApp({ user, logout }) {
   const [entries, setEntries] = useState([]);
   const [tab, setTab] = useState('journal');
-  const [editing, setEditing] = useState(null);
   const [error, setError] = useState('');
   const [viewingUserId, setViewingUserId] = useState(null);
   const [shares, setShares] = useState({ viewers: [], owners: [] });
@@ -51,30 +49,6 @@ function MainApp({ user, logout }) {
   const min = useMemo(() => (
     displayedEntries.length ? Math.min(...displayedEntries.map(e => e.pain_level)) : '–'
   ), [displayedEntries]);
-
-  const save = async e => {
-    try {
-      await api(e.id ? `/entries/${e.id}` : '/entries', {
-        method: e.id ? 'PUT' : 'POST',
-        body: JSON.stringify(e)
-      });
-      setEditing(null);
-      load();
-    } catch (x) {
-      setError(x.message);
-    }
-  };
-
-  const remove = async id => {
-    if (confirm('Eintrag wirklich löschen?')) {
-      try {
-        await api(`/entries/${id}`, { method: 'DELETE' });
-        load();
-      } catch (e) {
-        setError(e.message);
-      }
-    }
-  };
 
   return (
     <div className="app">
@@ -135,38 +109,13 @@ function MainApp({ user, logout }) {
         )}
 
         {tab === 'journal' && (
-          <div className="tab-content">
-            <div className="section-title">
-              <h2>Meine Einträge</h2>
-              {!isReadOnly && (
-                <button className="primary icon" onClick={() => setEditing({})}>
-                  <Plus size={18} /> Neuer Eintrag
-                </button>
-              )}
-            </div>
-
-            {displayedEntries.length === 0 ? (
-              <div className="empty">
-                <Calendar size={48} />
-                <h3>Noch keine Einträge</h3>
-                <p>Starten Sie mit dem ersten Eintrag, um Ihre Schmerzgeschichte zu dokumentieren.</p>
-              </div>
-            ) : (
-              <div className="entries">
-                {displayedEntries
-                  .sort((a, b) => new Date(b.occurred_at) - new Date(a.occurred_at))
-                  .map(entry => (
-                    <EntryCard
-                      key={entry.id}
-                      entry={entry}
-                      onEdit={setEditing}
-                      onDelete={remove}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-              </div>
-            )}
-          </div>
+          <JournalTab
+            user={user}
+            viewingUserId={viewingUserId}
+            isReadOnly={isReadOnly}
+            onError={setError}
+            onDataChanged={load}
+          />
         )}
 
         {tab === 'dashboard' && (
@@ -230,15 +179,6 @@ function MainApp({ user, logout }) {
 
         {tab === 'shares' && <SharesTab user={user} onError={setError} />}
       </main>
-
-      {editing !== null && (
-        <EntryForm
-          initial={editing.id ? editing : null}
-          onSave={save}
-          onClose={() => setEditing(null)}
-          isReadOnly={isReadOnly}
-        />
-      )}
     </div>
   );
 }

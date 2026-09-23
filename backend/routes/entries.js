@@ -15,6 +15,11 @@ function readableUserIds(userId) {
 router.get('/', (req, res) => {
   const ids = readableUserIds(req.user.id);
   const qs = ids.map(() => '?').join(',');
+
+  const month = /^\d{4}-\d{2}$/.test(req.query.month || '') ? req.query.month : null;
+  const monthFilter = month ? 'AND substr(e.occurred_at, 1, 7) = ?' : '';
+  const params = month ? [...ids, month] : ids;
+
   res.json(
     db.prepare(`
       SELECT e.*, u.username,
@@ -24,9 +29,25 @@ router.get('/', (req, res) => {
       JOIN users u ON u.id = e.user_id
       LEFT JOIN activities a ON a.id = e.activity_id
       LEFT JOIN medications m ON m.id = e.medication_id
-      WHERE e.user_id IN (${qs})
+      WHERE e.user_id IN (${qs}) ${monthFilter}
       ORDER BY occurred_at DESC
-    `).all(...ids)
+    `).all(...params)
+  );
+});
+
+// Lightweight: which months (YYYY-MM) actually have entries, for the
+// Journal tab's month/year navigator - without loading the entries
+// themselves.
+router.get('/months', (req, res) => {
+  const ids = readableUserIds(req.user.id);
+  const qs = ids.map(() => '?').join(',');
+  res.json(
+    db.prepare(`
+      SELECT DISTINCT substr(occurred_at, 1, 7) AS month
+      FROM entries
+      WHERE user_id IN (${qs})
+      ORDER BY month DESC
+    `).all(...ids).map(r => r.month)
   );
 });
 

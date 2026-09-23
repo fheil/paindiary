@@ -13,7 +13,7 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
           {new Date(entry.occurred_at).toLocaleString('de-DE')}
         </p>
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
-          <strong>Aktivität:</strong> {entry.activity_label ? `${entry.activity_code} – ${entry.activity_label}` : '–'}
+          <strong>Aktivität:</strong> {entry.activity_label || '–'}
         </p>
         <p style={{ margin: '0.3rem 0', fontWeight: 500 }}>
           <strong>Situation:</strong> {entry.situation || '–'}

@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { api } from '../api';
 
 const DAY_NAMES = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const END_SUFFIX = ' - ENDE';
 
 function startOfWeek(date) {
   const d = new Date(date);
@@ -42,6 +42,11 @@ function buildLegend(entriesSorted, getValue) {
 
 export default function WeeklyTable({ entries }) {
   const [weekOffset, setWeekOffset] = useState(0);
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    api('/activities').then(setActivities).catch(console.error);
+  }, []);
 
   const sorted = useMemo(
     () => [...entries].sort((a, b) => new Date(a.occurred_at) - new Date(b.occurred_at)),
@@ -49,19 +54,11 @@ export default function WeeklyTable({ entries }) {
   );
 
   const medLegend = useMemo(() => buildLegend(sorted, e => e.medication), [sorted]);
-  const actLegend = useMemo(
-    () => buildLegend(sorted, e => {
-      if (!e.body_reaction) return '';
-      const t = e.body_reaction.trim();
-      return t.endsWith(END_SUFFIX) ? t.slice(0, -END_SUFFIX.length).trim() : t;
-    }),
-    [sorted]
-  );
 
   const weekStart = useMemo(() => addDays(startOfWeek(new Date()), weekOffset * 7), [weekOffset]);
   const weekEnd = addDays(weekStart, 6);
 
-  // grid[dayIndex][hour] = { pain, medLetter, actLetter }
+  // grid[dayIndex][hour] = { pain, medLetter, actCode }
   const grid = useMemo(() => {
     const g = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => null));
 
@@ -71,71 +68,19 @@ export default function WeeklyTable({ entries }) {
       return { dayIndex: diffDays, hour: date.getHours() };
     };
 
-    const setSlot = (date, patch) => {
-      const s = slotFor(date);
-      if (!s) return;
-      const current = g[s.dayIndex][s.hour] || {};
-      g[s.dayIndex][s.hour] = { ...current, ...patch };
-    };
-
-    // S + M: every entry always fills its own single hour.
     for (const e of sorted) {
-      const date = new Date(e.occurred_at);
+      const s = slotFor(new Date(e.occurred_at));
+      if (!s) continue;
       const medLetter = e.medication ? medLegend.get(e.medication.trim()) : null;
-      setSlot(date, { pain: e.pain_level, medLetter: medLetter || null });
-    }
-
-    // A (+ gap-fill of S across matched start/end pairs).
-    const consumed = new Set();
-    for (let i = 0; i < sorted.length; i++) {
-      const start = sorted[i];
-      if (consumed.has(start.id)) continue;
-      const raw = (start.body_reaction || '').trim();
-      if (!raw || raw.endsWith(END_SUFFIX)) continue;
-
-      let end = null;
-      for (let j = i + 1; j < sorted.length; j++) {
-        const cand = sorted[j];
-        if (consumed.has(cand.id)) continue;
-        const candRaw = (cand.body_reaction || '').trim();
-        if (candRaw === raw + END_SUFFIX) { end = cand; break; }
-      }
-
-      const code = actLegend.get(raw);
-      if (end) {
-        consumed.add(start.id);
-        consumed.add(end.id);
-        let cursor = new Date(start.occurred_at);
-        cursor.setMinutes(0, 0, 0);
-        const endDate = new Date(end.occurred_at);
-        while (cursor <= endDate) {
-          const s = slotFor(cursor);
-          if (s) {
-            const current = g[s.dayIndex][s.hour] || {};
-            g[s.dayIndex][s.hour] = {
-              pain: current.pain ?? start.pain_level,
-              medLetter: current.medLetter ?? null,
-              actLetter: current.actLetter ?? code
-            };
-          }
-          cursor = new Date(cursor.getTime() + 3600000);
-        }
-      } else {
-        setSlot(new Date(start.occurred_at), { actLetter: code });
-      }
-    }
-
-    // Orphaned "- ENDE" entries with no matching start still show their own hour.
-    for (const e of sorted) {
-      const raw = (e.body_reaction || '').trim();
-      if (raw.endsWith(END_SUFFIX) && !consumed.has(e.id)) {
-        const base = raw.slice(0, -END_SUFFIX.length).trim();
-        setSlot(new Date(e.occurred_at), { actLetter: actLegend.get(base) || null });
-      }
+      g[s.dayIndex][s.hour] = {
+        pain: e.pain_level,
+        medLetter: medLetter || null,
+        actCode: e.activity_code || null
+      };
     }
 
     return g;
-  }, [sorted, weekStart, weekEnd, medLegend, actLegend]);
+  }, [sorted, weekStart, medLegend]);
 
   const painClass = level => {
     if (level == null) return '';
@@ -191,7 +136,7 @@ export default function WeeklyTable({ entries }) {
                     <React.Fragment key={dayIndex}>
                       <td className={`pain-cell ${painClass(cell?.pain)}`}>{cell?.pain ?? ''}</td>
                       <td>{cell?.medLetter || ''}</td>
-                      <td className="day-end">{cell?.actLetter || ''}</td>
+                      <td className="day-end">{cell?.actCode || ''}</td>
                     </React.Fragment>
                   );
                 })}
@@ -210,10 +155,10 @@ export default function WeeklyTable({ entries }) {
           ))}
         </div>
         <div className="legend-box">
-          <h3>Aktivitäten / Körperreaktionen</h3>
-          {actLegend.size === 0 && <p className="muted">Keine erfasst</p>}
-          {[...actLegend.entries()].map(([value, letter]) => (
-            <p key={value}><b>{letter}</b> = {value}</p>
+          <h3>Aktivitäten</h3>
+          {activities.length === 0 && <p className="muted">Keine erfasst</p>}
+          {activities.map(a => (
+            <p key={a.id}><b>{a.code}</b> = {a.label}</p>
           ))}
         </div>
       </div>

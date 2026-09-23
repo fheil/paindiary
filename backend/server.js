@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import entriesRoutes from './routes/entries.js';
 import sharesRoutes from './routes/shares.js';
+import activitiesRoutes from './routes/activities.js';
 import db from './db.js';
 
 dotenv.config();
@@ -27,6 +28,7 @@ app.get('/health', (_req, res) => res.json({ ok: true, service: 'paindiary-backe
 app.use('/api/auth', authRoutes);
 app.use('/api/entries', entriesRoutes);
 app.use('/api/shares', sharesRoutes);
+app.use('/api/activities', activitiesRoutes);
 
 // ============ ADMIN SETUP ENDPOINT ============
 app.post('/api/admin/make-admin/:username', (req, res) => {

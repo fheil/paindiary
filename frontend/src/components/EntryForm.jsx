@@ -17,6 +17,7 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
   const [suggestions, setSuggestions] = useState({
     medication: [], situation: [], body_reaction: [], thoughts: [], feeling: [], behavior: []
   });
+  const [activities, setActivities] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [error, setError] = useState('');
 
@@ -30,6 +31,7 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
         setSuggestions(extracted);
       })
       .catch(console.error);
+    api('/activities').then(setActivities).catch(console.error);
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -95,6 +97,20 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
             disabled={isReadOnly}
           />
         ))}
+
+        <label>
+          Aktivität
+          <select
+            value={form.activity_id || ''}
+            onChange={e => set('activity_id', e.target.value ? Number(e.target.value) : '')}
+            disabled={isReadOnly}
+          >
+            <option value="">– keine Auswahl –</option>
+            {activities.map(a => (
+              <option key={a.id} value={a.id}>{a.code} – {a.label}</option>
+            ))}
+          </select>
+        </label>
 
         {error && <p style={{ color: 'var(--rose-500)', fontSize: '0.9rem' }}>❌ {error}</p>}
 

@@ -47,12 +47,39 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT
 );
 
+CREATE TABLE IF NOT EXISTS activities (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code TEXT NOT NULL UNIQUE,
+  label TEXT NOT NULL
+);
+
 INSERT OR IGNORE INTO settings (key, value) VALUES ('registration_enabled', 'true');
+
+INSERT OR IGNORE INTO activities (code, label) VALUES
+  ('Ar', 'Arbeit und Beruf'),
+  ('En', 'Entspannung'),
+  ('Es', 'Essen'),
+  ('Fs', 'Fernsehen'),
+  ('Fz', 'Freizeit'),
+  ('G', 'Gespräche'),
+  ('H', 'Hausarbeit'),
+  ('Kö', 'Körperpflege'),
+  ('Kg', 'Krankengymnastik / Physiotherapie'),
+  ('L', 'Lesen'),
+  ('R', 'Ruhe'),
+  ('Sf', 'Schlafen'),
+  ('Sg', 'Spaziergänge'),
+  ('Sp', 'Sport'),
+  ('U', 'Untersuchungen / Behandlungen'),
+  ('Eink', 'Einkaufen');
 `);
 
 const entryColumns = db.prepare("PRAGMA table_info(entries)").all().map(c => c.name);
 if (!entryColumns.includes('medication')) {
   db.exec("ALTER TABLE entries ADD COLUMN medication TEXT NOT NULL DEFAULT ''");
+}
+if (!entryColumns.includes('activity_id')) {
+  db.exec("ALTER TABLE entries ADD COLUMN activity_id INTEGER REFERENCES activities(id) ON DELETE SET NULL");
 }
 
 export default db;

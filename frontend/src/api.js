@@ -22,5 +22,6 @@ export const blank = () => ({
   thoughts: '',
   feeling: '',
   behavior: '',
-  medication: ''
+  medication: '',
+  activity_id: ''
 });

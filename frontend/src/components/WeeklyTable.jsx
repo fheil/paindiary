@@ -156,7 +156,7 @@ export default function WeeklyTable({ entries }) {
             <ChevronLeft size={18} />
           </button>
           <span>{fmtDate(weekStart)} – {fmtDate(weekEnd)}</span>
-          <button type="button" className="icon" onClick={() => setWeekOffset(w => w + 1)}>
+          <button type="button" className="icon" onClick={() => setWeekOffset(w => w + 1)} disabled={weekOffset >= 0}>
             <ChevronRight size={18} />
           </button>
           <button

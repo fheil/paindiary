@@ -6,7 +6,6 @@ import entriesRoutes from './routes/entries.js';
 import sharesRoutes from './routes/shares.js';
 import activitiesRoutes from './routes/activities.js';
 import medicationsRoutes from './routes/medications.js';
-import db from './db.js';
 
 dotenv.config();
 
@@ -31,25 +30,6 @@ app.use('/api/entries', entriesRoutes);
 app.use('/api/shares', sharesRoutes);
 app.use('/api/activities', activitiesRoutes);
 app.use('/api/medications', medicationsRoutes);
-
-// ============ ADMIN SETUP ENDPOINT ============
-app.post('/api/admin/make-admin/:username', (req, res) => {
-  try {
-    const result = db.prepare('UPDATE users SET admin = 1 WHERE username = ?').run(req.params.username);
-    
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'User nicht gefunden' });
-    }
-    
-    res.json({ 
-      success: true, 
-      message: `${req.params.username} ist jetzt Admin` 
-    });
-  } catch(e) {
-    console.error('Admin Setup Error:', e);
-    res.status(500).json({ error: e.message });
-  }
-});
 
 // Error-Handler
 app.use((err, _req, res, _next) => { 

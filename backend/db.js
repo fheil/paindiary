@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  admin INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -83,5 +84,10 @@ INSERT OR IGNORE INTO activities (code, label) VALUES
   ('U', 'Untersuchungen / Behandlungen'),
   ('Eink', 'Einkaufen');
 `);
+
+const userColumns = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
+if (!userColumns.includes('admin')) {
+  db.exec('ALTER TABLE users ADD COLUMN admin INTEGER NOT NULL DEFAULT 0');
+}
 
 export default db;

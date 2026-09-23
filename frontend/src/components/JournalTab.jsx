@@ -129,7 +129,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
       <div className="empty">
         <Calendar size={48} />
         <h3>Noch keine Einträge</h3>
-        <p>Starten Sie mit dem ersten Eintrag, um Ihre Schmerzgeschichte zu dokumentieren.</p>
+        <p>Starte mit deinem ersten Eintrag, um deine Schmerzgeschichte zu dokumentieren.</p>
       </div>
     ) : (
       <div className="entries">

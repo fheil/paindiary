@@ -10,7 +10,10 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
       </div>
       <div>
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'var(--slate-400)' }}>
-          {new Date(entry.occurred_at).toLocaleString('de-DE')}
+          <strong>Schmerzbeginn:</strong> {new Date(entry.occurred_at).toLocaleString('de-DE')}
+          {entry.pain_end_at && (
+            <> · <strong>Schmerzende:</strong> {new Date(entry.pain_end_at).toLocaleString('de-DE')}</>
+          )}
         </p>
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
           <strong>Aktivität:</strong> {entry.activity_label || '–'}
@@ -32,6 +35,9 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
         </p>
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
           <strong>Medikamente:</strong> {entry.medication || '–'}
+          {entry.medication_taken_at && (
+            <> ({new Date(entry.medication_taken_at).toLocaleString('de-DE')})</>
+          )}
         </p>
       </div>
       <div className="entry-actions">

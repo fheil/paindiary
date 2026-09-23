@@ -5,7 +5,7 @@ import { authenticate } from '../auth-middleware.js';
 const router = Router();
 router.use(authenticate);
 
-const fields = ['occurred_at', 'pain_level', 'situation', 'body_reaction', 'thoughts', 'feeling', 'behavior', 'medication', 'activity_id'];
+const fields = ['occurred_at', 'pain_end_at', 'medication_taken_at', 'pain_level', 'situation', 'body_reaction', 'thoughts', 'feeling', 'behavior', 'medication', 'activity_id'];
 
 function readableUserIds(userId) {
   return [userId, ...db.prepare('SELECT owner_id FROM shares WHERE viewer_id = ?').all(userId).map(x => x.owner_id)];
@@ -31,10 +31,12 @@ router.post('/', (req, res) => {
   if (!b.occurred_at) return res.status(400).json({ error: 'Datum und Uhrzeit erforderlich.' });
   
   const info = db.prepare(
-    'INSERT INTO entries (user_id, occurred_at, pain_level, situation, body_reaction, thoughts, feeling, behavior, medication, activity_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO entries (user_id, occurred_at, pain_end_at, medication_taken_at, pain_level, situation, body_reaction, thoughts, feeling, behavior, medication, activity_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     req.user.id,
     b.occurred_at,
+    b.pain_end_at || '',
+    b.medication_taken_at || '',
     Math.max(0, Math.min(10, Number(b.pain_level) || 0)),
     b.situation || '',
     b.body_reaction || '',

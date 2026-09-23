@@ -14,14 +14,20 @@ export async function api(path, options = {}) {
   return data;
 }
 
-export const blank = () => ({
-  occurred_at: new Date().toISOString().slice(0, 16),
-  pain_level: 5,
-  situation: '',
-  body_reaction: '',
-  thoughts: '',
-  feeling: '',
-  behavior: '',
-  medication: '',
-  activity_id: ''
-});
+export const blank = () => {
+  const start = new Date();
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  return {
+    occurred_at: start.toISOString().slice(0, 16),
+    pain_end_at: end.toISOString().slice(0, 16),
+    medication_taken_at: '',
+    pain_level: 5,
+    situation: '',
+    body_reaction: '',
+    thoughts: '',
+    feeling: '',
+    behavior: '',
+    medication: '',
+    activity_id: ''
+  };
+};

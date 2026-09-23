@@ -81,5 +81,11 @@ if (!entryColumns.includes('medication')) {
 if (!entryColumns.includes('activity_id')) {
   db.exec("ALTER TABLE entries ADD COLUMN activity_id INTEGER REFERENCES activities(id) ON DELETE SET NULL");
 }
+if (!entryColumns.includes('pain_end_at')) {
+  db.exec("ALTER TABLE entries ADD COLUMN pain_end_at TEXT NOT NULL DEFAULT ''");
+}
+if (!entryColumns.includes('medication_taken_at')) {
+  db.exec("ALTER TABLE entries ADD COLUMN medication_taken_at TEXT NOT NULL DEFAULT ''");
+}
 
 export default db;

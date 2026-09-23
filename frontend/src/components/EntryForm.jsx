@@ -60,16 +60,36 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
           </button>
         </div>
 
-        <label>
-          Datum & Uhrzeit
-          <input
-            required
-            type="datetime-local"
-            value={form.occurred_at}
-            onChange={e => set('occurred_at', e.target.value)}
-            disabled={isReadOnly}
-          />
-        </label>
+        <div className="datetime-row">
+          <label>
+            Schmerzbeginn
+            <input
+              required
+              type="datetime-local"
+              value={form.occurred_at}
+              onChange={e => set('occurred_at', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </label>
+          <label>
+            Schmerzende
+            <input
+              type="datetime-local"
+              value={form.pain_end_at}
+              onChange={e => set('pain_end_at', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </label>
+          <label>
+            Medikamenteneinnahme
+            <input
+              type="datetime-local"
+              value={form.medication_taken_at}
+              onChange={e => set('medication_taken_at', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </label>
+        </div>
 
         <label>
           Schmerzstärke <b className="pain-value">{form.pain_level}/10</b>

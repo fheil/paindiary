@@ -13,6 +13,9 @@ export default function SharesTab({ user, onError, onDataChanged }) {
   const [pwForm, setPwForm] = useState({ current: '', next: '', repeat: '' });
   const [pwError, setPwError] = useState('');
   const [pwMessage, setPwMessage] = useState('');
+  const [dayConfig, setDayConfig] = useState({ compact_start: 6, compact_end: 22 });
+  const [dayConfigError, setDayConfigError] = useState('');
+  const [dayConfigMessage, setDayConfigMessage] = useState('');
 
   const sections = [
     { key: 'shares', label: 'Freigaben verwalten' },
@@ -20,6 +23,7 @@ export default function SharesTab({ user, onError, onDataChanged }) {
     ...(user.admin ? [
       { key: 'users', label: 'Benutzerverwaltung' },
       { key: 'registration', label: 'Registrierung erlauben' },
+      { key: 'daytime', label: 'Tagebuch-Anzeige' },
       { key: 'backup', label: 'Backup' }
     ] : [])
   ];
@@ -40,6 +44,7 @@ export default function SharesTab({ user, onError, onDataChanged }) {
     if (user.admin) {
       api('/auth/registration-status').then(d => setRegEnabled(d.enabled)).catch(e => onError?.(e.message));
       loadAllUsers();
+      api('/config').then(setDayConfig).catch(e => onError?.(e.message));
     }
   }, [onError, user.admin]);
 
@@ -82,6 +87,25 @@ export default function SharesTab({ user, onError, onDataChanged }) {
       setPwForm({ current: '', next: '', repeat: '' });
     } catch (e) {
       setPwError(e.message);
+    }
+  };
+
+  const saveDayConfig = async e => {
+    e.preventDefault();
+    setDayConfigError('');
+    setDayConfigMessage('');
+    try {
+      const saved = await api('/config', {
+        method: 'PUT',
+        body: JSON.stringify({
+          compact_start: Number(dayConfig.compact_start),
+          compact_end: Number(dayConfig.compact_end)
+        })
+      });
+      setDayConfig(saved);
+      setDayConfigMessage('Gespeichert.');
+    } catch (e) {
+      setDayConfigError(e.message);
     }
   };
 
@@ -273,6 +297,44 @@ export default function SharesTab({ user, onError, onDataChanged }) {
                   {regEnabled ? 'Neue Registrierungen sind erlaubt' : 'Registrierung ist deaktiviert'}
                 </span>
               </div>
+            </>
+          )}
+
+          {activeSection === 'daytime' && user.admin && (
+            <>
+              <h2 style={{ marginTop: 0 }}>Tagebuch-Anzeige</h2>
+              <p className="muted" style={{ marginTop: '0.5rem' }}>
+                Stundenbereich für die "Kompakt"-Ansicht im Tagebuch.
+              </p>
+              <form onSubmit={saveDayConfig} style={{ marginTop: '1rem', maxWidth: '360px' }}>
+                <div className="datetime-row">
+                  <label>
+                    Von (Stunde)
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      max="23"
+                      value={dayConfig.compact_start}
+                      onChange={e => setDayConfig(c => ({ ...c, compact_start: e.target.value }))}
+                    />
+                  </label>
+                  <label>
+                    Bis (Stunde)
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      max="24"
+                      value={dayConfig.compact_end}
+                      onChange={e => setDayConfig(c => ({ ...c, compact_end: e.target.value }))}
+                    />
+                  </label>
+                </div>
+                {dayConfigError && <p style={{ color: 'var(--rose-500)', fontSize: '0.9rem' }}>❌ {dayConfigError}</p>}
+                {dayConfigMessage && <p style={{ color: 'var(--teal-700)', fontSize: '0.9rem' }}>✓ {dayConfigMessage}</p>}
+                <button className="primary" style={{ marginTop: '1rem' }}>Speichern</button>
+              </form>
             </>
           )}
 

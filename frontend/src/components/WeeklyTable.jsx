@@ -68,15 +68,39 @@ export default function WeeklyTable({ entries }) {
       return { dayIndex: diffDays, hour: date.getHours() };
     };
 
+    const setSlot = (date, patch) => {
+      const s = slotFor(date);
+      if (!s) return;
+      const current = g[s.dayIndex][s.hour] || {};
+      g[s.dayIndex][s.hour] = { ...current, ...patch };
+    };
+
+    // S + A: fill every hour from occurred_at through pain_end_at (inclusive).
+    // Falls back to just occurred_at's own hour if there's no valid end.
+    const MAX_SPAN_HOURS = 24 * 31; // guard against a mistyped end date far in the future
     for (const e of sorted) {
-      const s = slotFor(new Date(e.occurred_at));
-      if (!s) continue;
-      const medLetter = e.medication ? medLegend.get(e.medication.trim()) : null;
-      g[s.dayIndex][s.hour] = {
-        pain: e.pain_level,
-        medLetter: medLetter || null,
-        actCode: e.activity_code || null
-      };
+      const start = new Date(e.occurred_at);
+      const end = e.pain_end_at ? new Date(e.pain_end_at) : null;
+      const spanHours = end ? (end - start) / 3600000 : 0;
+      const validEnd = end && end >= start && spanHours <= MAX_SPAN_HOURS ? end : null;
+
+      if (validEnd) {
+        let cursor = new Date(start);
+        cursor.setMinutes(0, 0, 0);
+        while (cursor <= validEnd) {
+          setSlot(cursor, { pain: e.pain_level, actCode: e.activity_code || null });
+          cursor = new Date(cursor.getTime() + 3600000);
+        }
+      } else {
+        setSlot(start, { pain: e.pain_level, actCode: e.activity_code || null });
+      }
+    }
+
+    // M: placed at its own medication_taken_at hour, independent of the pain span.
+    for (const e of sorted) {
+      if (!e.medication_taken_at || !e.medication) continue;
+      const medLetter = medLegend.get(e.medication.trim());
+      if (medLetter) setSlot(new Date(e.medication_taken_at), { medLetter });
     }
 
     return g;

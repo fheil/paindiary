@@ -307,30 +307,39 @@ export default function SharesTab({ user, onError, onDataChanged }) {
                 Stundenbereich für die "Kompakt"-Ansicht im Tagebuch.
               </p>
               <form onSubmit={saveDayConfig} style={{ marginTop: '1rem', maxWidth: '360px' }}>
-                <div className="datetime-row">
-                  <label>
-                    Von (Stunde)
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      max="23"
-                      value={dayConfig.compact_start}
-                      onChange={e => setDayConfig(c => ({ ...c, compact_start: e.target.value }))}
-                    />
-                  </label>
-                  <label>
-                    Bis (Stunde)
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      max="24"
-                      value={dayConfig.compact_end}
-                      onChange={e => setDayConfig(c => ({ ...c, compact_end: e.target.value }))}
-                    />
-                  </label>
+                <div className="range-slider">
+                  <div className="track" />
+                  <div
+                    className="track-fill"
+                    style={{
+                      left: `${(dayConfig.compact_start / 24) * 100}%`,
+                      width: `${((dayConfig.compact_end - dayConfig.compact_start) / 24) * 100}%`
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="24"
+                    value={dayConfig.compact_start}
+                    onChange={e => {
+                      const v = Math.min(Number(e.target.value), dayConfig.compact_end - 1);
+                      setDayConfig(c => ({ ...c, compact_start: v }));
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="24"
+                    value={dayConfig.compact_end}
+                    onChange={e => {
+                      const v = Math.max(Number(e.target.value), dayConfig.compact_start + 1);
+                      setDayConfig(c => ({ ...c, compact_end: v }));
+                    }}
+                  />
                 </div>
+                <p className="muted" style={{ marginTop: '0.5rem' }}>
+                  {dayConfig.compact_start}-{dayConfig.compact_end} Uhr ({dayConfig.compact_end - dayConfig.compact_start} Stunden)
+                </p>
                 {dayConfigError && <p style={{ color: 'var(--rose-500)', fontSize: '0.9rem' }}>❌ {dayConfigError}</p>}
                 {dayConfigMessage && <p style={{ color: 'var(--teal-700)', fontSize: '0.9rem' }}>✓ {dayConfigMessage}</p>}
                 <button className="primary" style={{ marginTop: '1rem' }}>Speichern</button>

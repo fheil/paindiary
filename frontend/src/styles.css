@@ -209,6 +209,52 @@ input[type='range']::-moz-range-track {
   border: none;
 }
 
+/* Dual-handle range slider: two overlaid inputs share one visual track. */
+.range-slider {
+  position: relative;
+  height: 32px;
+  margin-top: 0.75rem;
+}
+
+.range-slider .track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+
+.range-slider .track-fill {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 6px;
+  background: var(--teal-700);
+  border-radius: 3px;
+}
+
+.range-slider input[type='range'] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.range-slider input[type='range']::-webkit-slider-thumb {
+  pointer-events: auto;
+}
+
+.range-slider input[type='range']::-moz-range-thumb {
+  pointer-events: auto;
+}
+
 /* ===== BUTTONS ===== */
 button {
   cursor: pointer;

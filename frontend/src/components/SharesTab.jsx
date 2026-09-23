@@ -237,7 +237,7 @@ export default function SharesTab({ user, onError }) {
           {activeSection === 'users' && user.admin && (
             <>
               <h2 style={{ marginTop: 0 }}>Benutzerverwaltung</h2>
-              <p className="muted" style={{ marginTop: '0.5rem' }}>
+              <p style={{ marginTop: '0.5rem', color: 'var(--pain-7)', fontWeight: 600 }}>
                 Achtung: Beim Löschen eines Benutzers werden auch alle seine Einträge unwiderruflich mitgelöscht.
               </p>
               <div className="share-cards" style={{ marginTop: '1.5rem' }}>

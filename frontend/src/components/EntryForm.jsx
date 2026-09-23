@@ -83,6 +83,20 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
           />
         </label>
 
+        <label>
+          Aktivität
+          <select
+            value={form.activity_id || ''}
+            onChange={e => set('activity_id', e.target.value ? Number(e.target.value) : '')}
+            disabled={isReadOnly}
+          >
+            <option value="">– keine Auswahl –</option>
+            {activities.map(a => (
+              <option key={a.id} value={a.id}>{a.code} – {a.label}</option>
+            ))}
+          </select>
+        </label>
+
         {FIELD_CONFIG.map(({ field, label, placeholder }) => (
           <AutocompleteField
             key={field}
@@ -97,20 +111,6 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
             disabled={isReadOnly}
           />
         ))}
-
-        <label>
-          Aktivität
-          <select
-            value={form.activity_id || ''}
-            onChange={e => set('activity_id', e.target.value ? Number(e.target.value) : '')}
-            disabled={isReadOnly}
-          >
-            <option value="">– keine Auswahl –</option>
-            {activities.map(a => (
-              <option key={a.id} value={a.id}>{a.code} – {a.label}</option>
-            ))}
-          </select>
-        </label>
 
         {error && <p style={{ color: 'var(--rose-500)', fontSize: '0.9rem' }}>❌ {error}</p>}
 

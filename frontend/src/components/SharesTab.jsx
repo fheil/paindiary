@@ -8,6 +8,7 @@ export default function SharesTab({ user, onError }) {
   const [error, setError] = useState('');
   const [regEnabled, setRegEnabled] = useState(true);
   const [backingUp, setBackingUp] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
   const [activeSection, setActiveSection] = useState('shares');
   const [pwForm, setPwForm] = useState({ current: '', next: '', repeat: '' });
   const [pwError, setPwError] = useState('');
@@ -17,6 +18,7 @@ export default function SharesTab({ user, onError }) {
     { key: 'shares', label: 'Freigaben verwalten' },
     { key: 'password', label: 'Passwort ändern' },
     ...(user.admin ? [
+      { key: 'users', label: 'Benutzerverwaltung' },
       { key: 'registration', label: 'Registrierung erlauben' },
       { key: 'backup', label: 'Backup' }
     ] : [])
@@ -28,6 +30,8 @@ export default function SharesTab({ user, onError }) {
     setShares({ viewers: data.viewers, owners: data.owners });
   };
 
+  const loadAllUsers = () => api('/admin/users').then(setAllUsers).catch(e => onError?.(e.message));
+
   useEffect(() => {
     reload().catch(e => {
       setError(e.message);
@@ -35,6 +39,7 @@ export default function SharesTab({ user, onError }) {
     });
     if (user.admin) {
       api('/auth/registration-status').then(d => setRegEnabled(d.enabled)).catch(e => onError?.(e.message));
+      loadAllUsers();
     }
   }, [onError, user.admin]);
 
@@ -77,6 +82,18 @@ export default function SharesTab({ user, onError }) {
       setPwForm({ current: '', next: '', repeat: '' });
     } catch (e) {
       setPwError(e.message);
+    }
+  };
+
+  const deleteUser = async u => {
+    if (!confirm(`Benutzer "${u.username}" wirklich löschen? Dabei werden auch ALLE seine Einträge unwiderruflich gelöscht.`)) {
+      return;
+    }
+    try {
+      await api(`/admin/users/${u.id}`, { method: 'DELETE' });
+      await loadAllUsers();
+    } catch (e) {
+      setError(e.message);
     }
   };
 
@@ -214,6 +231,30 @@ export default function SharesTab({ user, onError }) {
                 {pwMessage && <p style={{ color: 'var(--teal-700)', fontSize: '0.9rem' }}>✓ {pwMessage}</p>}
                 <button className="primary" style={{ marginTop: '1rem' }}>Passwort ändern</button>
               </form>
+            </>
+          )}
+
+          {activeSection === 'users' && user.admin && (
+            <>
+              <h2 style={{ marginTop: 0 }}>Benutzerverwaltung</h2>
+              <p className="muted" style={{ marginTop: '0.5rem' }}>
+                Achtung: Beim Löschen eines Benutzers werden auch alle seine Einträge unwiderruflich mitgelöscht.
+              </p>
+              <div className="share-cards" style={{ marginTop: '1.5rem' }}>
+                {allUsers.map(u => (
+                  <div key={u.id} className="share-card">
+                    <div>
+                      <strong>{u.username}</strong>
+                      {u.admin ? <p className="muted">Admin</p> : null}
+                    </div>
+                    {u.id !== user.id && !u.admin && (
+                      <button className="secondary" onClick={() => deleteUser(u)}>
+                        <Trash2 size={16} /> Löschen
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </>
           )}
 

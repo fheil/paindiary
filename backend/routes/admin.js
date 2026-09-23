@@ -38,4 +38,26 @@ router.get('/backup', requireAdmin, (req, res) => {
   archive.finalize();
 });
 
+router.get('/users', requireAdmin, (_req, res) => {
+  res.json(db.prepare('SELECT id, username, admin, created_at FROM users ORDER BY username').all());
+});
+
+router.delete('/users/:id', requireAdmin, (req, res) => {
+  const targetId = Number(req.params.id);
+  if (targetId === req.user.id) {
+    return res.status(400).json({ error: 'Du kannst dich nicht selbst löschen.' });
+  }
+
+  const target = db.prepare('SELECT admin FROM users WHERE id = ?').get(targetId);
+  if (!target) return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
+  if (target.admin) {
+    return res.status(400).json({ error: 'Admins können nicht gelöscht werden.' });
+  }
+
+  // entries/shares have ON DELETE CASCADE on user_id/owner_id/viewer_id,
+  // so this also removes everything that user ever entered.
+  const result = db.prepare('DELETE FROM users WHERE id = ?').run(targetId);
+  res.json({ deleted: result.changes });
+});
+
 export default router;

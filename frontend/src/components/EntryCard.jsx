@@ -12,6 +12,9 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'var(--slate-400)' }}>
           {new Date(entry.occurred_at).toLocaleString('de-DE')}
         </p>
+        <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
+          <strong>Aktivität:</strong> {entry.activity_label ? `${entry.activity_code} – ${entry.activity_label}` : '–'}
+        </p>
         <p style={{ margin: '0.3rem 0', fontWeight: 500 }}>
           <strong>Situation:</strong> {entry.situation || '–'}
         </p>
@@ -29,9 +32,6 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
         </p>
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
           <strong>Medikamente:</strong> {entry.medication || '–'}
-        </p>
-        <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
-          <strong>Aktivität:</strong> {entry.activity_label ? `${entry.activity_code} – ${entry.activity_label}` : '–'}
         </p>
       </div>
       <div className="entry-actions">

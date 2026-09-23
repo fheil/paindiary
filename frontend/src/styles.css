@@ -21,6 +21,7 @@
   --pain-7: #CF0F26;
   --pain-8: #922FCB;
   --pain-9: #601983;
+  --pain-10: #3d1056;
 }
 
 * {
@@ -153,7 +154,8 @@ input[type='range'] {
     var(--pain-6) 60%,
     var(--pain-7) 70%,
     var(--pain-8) 80%,
-    var(--pain-9) 100%);
+    var(--pain-9) 90%,
+    var(--pain-10) 100%);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
@@ -537,7 +539,7 @@ main {
 .pain.p7 { background: var(--pain-7); }
 .pain.p8 { background: var(--pain-8); }
 .pain.p9 { background: var(--pain-9); }
-.pain.p10 { background: var(--pain-9); }
+.pain.p10 { background: var(--pain-10); }
 
 .entry-content {
   display: flex;
@@ -944,7 +946,7 @@ main {
 .pain-cell.p7 { background: var(--pain-7); }
 .pain-cell.p8 { background: var(--pain-8); }
 .pain-cell.p9 { background: var(--pain-9); }
-.pain-cell.p10 { background: var(--pain-9); }
+.pain-cell.p10 { background: var(--pain-10); }
 
 .legends {
   display: grid;

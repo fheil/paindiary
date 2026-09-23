@@ -89,6 +89,16 @@ export default function WeeklyTable({ entries }) {
     return g;
   }, [sorted, weekStart]);
 
+  const usedActivities = useMemo(() => {
+    const usedCodes = new Set();
+    for (const day of grid) {
+      for (const cell of day) {
+        if (cell?.actCode) usedCodes.add(cell.actCode);
+      }
+    }
+    return activities.filter(a => usedCodes.has(a.code));
+  }, [grid, activities]);
+
   const painClass = level => {
     if (level == null) return '';
     const clamped = Math.max(0, Math.min(10, level));
@@ -165,9 +175,9 @@ export default function WeeklyTable({ entries }) {
           ))}
         </div>
         <div className="legend-box">
-          <h3>Aktivitäten</h3>
-          {activities.length === 0 && <p className="muted">Keine erfasst</p>}
-          {activities.map(a => (
+          <h3>Aktivitäten (diese Woche)</h3>
+          {usedActivities.length === 0 && <p className="muted">Keine erfasst</p>}
+          {usedActivities.map(a => (
             <p key={a.id}><b>{a.code}</b> = {a.label}</p>
           ))}
         </div>

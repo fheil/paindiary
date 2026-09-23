@@ -6,6 +6,7 @@ export default function SharesTab({ user, onError }) {
   const [users, setUsers] = useState([]);
   const [shares, setShares] = useState({ viewers: [], owners: [] });
   const [error, setError] = useState('');
+  const [regEnabled, setRegEnabled] = useState(true);
 
   const reload = async () => {
     const data = await api('/shares');
@@ -18,7 +19,19 @@ export default function SharesTab({ user, onError }) {
       setError(e.message);
       onError?.(e.message);
     });
+    api('/auth/registration-status').then(d => setRegEnabled(d.enabled)).catch(e => onError?.(e.message));
   }, [onError]);
+
+  const toggleRegistration = async () => {
+    const next = !regEnabled;
+    setRegEnabled(next);
+    try {
+      await api('/auth/registration-status', { method: 'PUT', body: JSON.stringify({ enabled: next }) });
+    } catch (e) {
+      setRegEnabled(regEnabled);
+      setError(e.message);
+    }
+  };
 
   const add = async userId => {
     try {
@@ -97,6 +110,19 @@ export default function SharesTab({ user, onError }) {
             ))}
           </div>
         )}
+      </div>
+
+      <div style={{ marginTop: '2.5rem' }}>
+        <h2>Registrierung erlauben</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
+          <label className="switch">
+            <input type="checkbox" checked={regEnabled} onChange={toggleRegistration} />
+            <span className="slider"></span>
+          </label>
+          <span className="muted">
+            {regEnabled ? 'Neue Registrierungen sind erlaubt' : 'Registrierung ist deaktiviert'}
+          </span>
+        </div>
       </div>
     </div>
   );

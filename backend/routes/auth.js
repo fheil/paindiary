@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db.js';
+import { authenticate } from '../auth-middleware.js';
 
 const router = Router();
 const secret = process.env.JWT_SECRET || 'change-this-secret-in-production';
@@ -32,6 +33,12 @@ router.post('/login', (req, res) => {
 router.get('/registration-status', (req, res) => {
   const setting = db.prepare('SELECT value FROM settings WHERE key = ?').get('registration_enabled');
   const enabled = !setting || setting.value !== 'false';
+  res.json({ enabled });
+});
+
+router.put('/registration-status', authenticate, (req, res) => {
+  const enabled = !!(req.body || {}).enabled;
+  db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(enabled ? 'true' : 'false', 'registration_enabled');
   res.json({ enabled });
 });
 

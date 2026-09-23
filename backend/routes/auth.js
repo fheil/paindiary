@@ -19,15 +19,15 @@ router.post('/register', (req, res) => {
   try {
     const info = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username.trim(), bcrypt.hashSync(password, 12));
     const user = { id: Number(info.lastInsertRowid), username: username.trim() };
-    res.status(201).json({ token: tokenFor(user), user });
+    res.status(201).json({ token: tokenFor(user), user: { ...user, admin: false } });
   } catch (e) { res.status(e.code === 'SQLITE_CONSTRAINT_UNIQUE' ? 409 : 500).json({ error: e.code === 'SQLITE_CONSTRAINT_UNIQUE' ? 'Benutzername bereits vergeben.' : 'Registrierung fehlgeschlagen.' }); }
 });
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body || {};
-  const user = db.prepare('SELECT id, username, password_hash FROM users WHERE username = ?').get(username?.trim());
+  const user = db.prepare('SELECT id, username, password_hash, admin FROM users WHERE username = ?').get(username?.trim());
   if (!user || !bcrypt.compareSync(password || '', user.password_hash)) return res.status(401).json({ error: 'Ungültige Zugangsdaten.' });
-  res.json({ token: tokenFor(user), user: { id: user.id, username: user.username } });
+  res.json({ token: tokenFor(user), user: { id: user.id, username: user.username, admin: !!user.admin } });
 });
 
 router.get('/registration-status', (req, res) => {
@@ -37,6 +37,9 @@ router.get('/registration-status', (req, res) => {
 });
 
 router.put('/registration-status', authenticate, (req, res) => {
+  const dbUser = db.prepare('SELECT admin FROM users WHERE id = ?').get(req.user.id);
+  if (!dbUser?.admin) return res.status(403).json({ error: 'Nur für Admins.' });
+
   const enabled = !!(req.body || {}).enabled;
   db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(enabled ? 'true' : 'false', 'registration_enabled');
   res.json({ enabled });
@@ -49,9 +52,9 @@ router.get('/me', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Kein Token vorhanden.' });
   try {
     const payload = jwt.verify(token, secret);
-    const user = db.prepare('SELECT id, username FROM users WHERE id = ?').get(payload.id);
+    const user = db.prepare('SELECT id, username, admin FROM users WHERE id = ?').get(payload.id);
     if (!user) return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
-    res.json({ user });
+    res.json({ user: { id: user.id, username: user.username, admin: !!user.admin } });
   } catch (e) {
     res.status(401).json({ error: 'Token ungültig oder abgelaufen.' });
   }

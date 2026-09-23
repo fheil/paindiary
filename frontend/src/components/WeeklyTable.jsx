@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, X } from 'lucide-react';
 import { api } from '../api';
 
 const DAY_NAMES = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
@@ -30,6 +30,7 @@ export default function WeeklyTable({ entries }) {
   const [medications, setMedications] = useState([]);
   const [config, setConfig] = useState({ compact_start: 6, compact_end: 22 });
   const [compactView, setCompactView] = useState(true);
+  const [activeCell, setActiveCell] = useState(null);
 
   useEffect(() => {
     api('/activities').then(setActivities).catch(console.error);
@@ -130,9 +131,9 @@ export default function WeeklyTable({ entries }) {
     return `p${clamped}`;
   };
 
-  const painTitle = cell => {
-    if (!cell || cell.pain == null) return undefined;
-    return `Situation: ${cell.situation || '–'}\nKörperreaktion: ${cell.bodyReaction || '–'}`;
+  const openCellDetails = (cell, dayIndex, hour) => {
+    if (!cell || cell.pain == null) return;
+    setActiveCell({ ...cell, dayName: DAY_NAMES[dayIndex], hour });
   };
 
   return (
@@ -198,7 +199,13 @@ export default function WeeklyTable({ entries }) {
                     const cell = grid[dayIndex][hour];
                     return (
                       <React.Fragment key={dayIndex}>
-                        <td className={`pain-cell ${painClass(cell?.pain)}`} title={painTitle(cell)}>{cell?.pain ?? ''}</td>
+                        <td
+                          className={`pain-cell ${painClass(cell?.pain)}`}
+                          onClick={() => openCellDetails(cell, dayIndex, hour)}
+                          style={cell?.pain != null ? { cursor: 'pointer' } : undefined}
+                        >
+                          {cell?.pain ?? ''}
+                        </td>
                         <td>{cell?.medCode || ''}</td>
                         <td className="day-end">{cell?.actCode || ''}</td>
                       </React.Fragment>
@@ -227,6 +234,21 @@ export default function WeeklyTable({ entries }) {
           ))}
         </div>
       </div>
+
+      {activeCell && (
+        <div className="cell-popup-backdrop" onClick={() => setActiveCell(null)}>
+          <div className="cell-popup" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <strong>{activeCell.dayName}, {activeCell.hour}-{activeCell.hour + 1} Uhr</strong>
+              <button type="button" className="icon" onClick={() => setActiveCell(null)}>
+                <X size={18} />
+              </button>
+            </div>
+            <p style={{ marginTop: '1rem' }}><strong>Situation:</strong> {activeCell.situation || '–'}</p>
+            <p><strong>Körperreaktion:</strong> {activeCell.bodyReaction || '–'}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

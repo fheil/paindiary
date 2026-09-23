@@ -1143,6 +1143,25 @@ main {
   color: var(--teal-900);
 }
 
+.cell-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.cell-popup {
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+}
+
 .legend-box p {
   margin: 0.2rem 0;
   font-size: 0.9rem;

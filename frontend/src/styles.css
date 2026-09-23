@@ -282,6 +282,12 @@ button {
   background: #e2e8f0;
 }
 
+.icon:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: transparent;
+}
+
 .icon.danger {
   color: var(--rose-500);
 }

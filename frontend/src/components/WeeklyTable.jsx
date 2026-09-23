@@ -107,11 +107,14 @@ export default function WeeklyTable({ entries }) {
           <button type="button" className="icon" onClick={() => setWeekOffset(w => w + 1)}>
             <ChevronRight size={18} />
           </button>
-          {weekOffset !== 0 && (
-            <button type="button" className="icon week-today" onClick={() => setWeekOffset(0)}>
-              Heute
-            </button>
-          )}
+          <button
+            type="button"
+            className="icon week-today"
+            onClick={() => setWeekOffset(0)}
+            disabled={weekOffset === 0}
+          >
+            Heute
+          </button>
         </div>
       </div>
 

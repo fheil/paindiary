@@ -9,8 +9,8 @@ const secret = process.env.JWT_SECRET || 'change-this-secret-in-production';
 const tokenFor = user => jwt.sign({ id: user.id, username: user.username }, secret, { expiresIn: '7d' });
 
 router.post('/register', (req, res) => {
-  const setting = db.prepare('SELECT value FROM settings WHERE key = ?').get('registration_enabled');
-  if (setting && setting.value === 'false') {
+  const { registration_enabled } = db.prepare('SELECT registration_enabled FROM config WHERE id = 1').get();
+  if (!registration_enabled) {
     return res.status(403).json({ error: 'Registrierung ist derzeit deaktiviert.' });
   }
   const { username, password } = req.body || {};
@@ -31,9 +31,8 @@ router.post('/login', (req, res) => {
 });
 
 router.get('/registration-status', (req, res) => {
-  const setting = db.prepare('SELECT value FROM settings WHERE key = ?').get('registration_enabled');
-  const enabled = !setting || setting.value !== 'false';
-  res.json({ enabled });
+  const { registration_enabled } = db.prepare('SELECT registration_enabled FROM config WHERE id = 1').get();
+  res.json({ enabled: !!registration_enabled });
 });
 
 router.put('/registration-status', authenticate, (req, res) => {
@@ -41,7 +40,7 @@ router.put('/registration-status', authenticate, (req, res) => {
   if (!dbUser?.admin) return res.status(403).json({ error: 'Nur für Admins.' });
 
   const enabled = !!(req.body || {}).enabled;
-  db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(enabled ? 'true' : 'false', 'registration_enabled');
+  db.prepare('UPDATE config SET registration_enabled = ? WHERE id = 1').run(enabled ? 1 : 0);
   res.json({ enabled });
 });
 

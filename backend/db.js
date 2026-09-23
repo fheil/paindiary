@@ -59,19 +59,14 @@ CREATE TABLE IF NOT EXISTS shares (
   CHECK(owner_id <> viewer_id)
 );
 
-CREATE TABLE IF NOT EXISTS settings (
-  key TEXT PRIMARY KEY,
-  value TEXT
-);
-
 CREATE TABLE IF NOT EXISTS config (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   compact_start INTEGER NOT NULL DEFAULT 6,
-  compact_end INTEGER NOT NULL DEFAULT 22
+  compact_end INTEGER NOT NULL DEFAULT 22,
+  registration_enabled INTEGER NOT NULL DEFAULT 1
 );
 
-INSERT OR IGNORE INTO settings (key, value) VALUES ('registration_enabled', 'true');
-INSERT OR IGNORE INTO config (id, compact_start, compact_end) VALUES (1, 6, 22);
+INSERT OR IGNORE INTO config (id, compact_start, compact_end, registration_enabled) VALUES (1, 6, 22, 1);
 
 INSERT OR IGNORE INTO activities (code, label) VALUES
   ('Ar', 'Arbeit und Beruf'),
@@ -95,6 +90,20 @@ INSERT OR IGNORE INTO activities (code, label) VALUES
 const userColumns = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
 if (!userColumns.includes('admin')) {
   db.exec('ALTER TABLE users ADD COLUMN admin INTEGER NOT NULL DEFAULT 0');
+}
+
+const configColumns = db.prepare("PRAGMA table_info(config)").all().map(c => c.name);
+if (!configColumns.includes('registration_enabled')) {
+  db.exec('ALTER TABLE config ADD COLUMN registration_enabled INTEGER NOT NULL DEFAULT 1');
+}
+
+// One-time: fold the old settings table into config, then retire it.
+if (db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'").get()) {
+  const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('registration_enabled');
+  if (row) {
+    db.prepare('UPDATE config SET registration_enabled = ? WHERE id = 1').run(row.value === 'false' ? 0 : 1);
+  }
+  db.exec('DROP TABLE settings');
 }
 
 export { dataDir };

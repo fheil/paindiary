@@ -9,9 +9,13 @@ export default function SharesTab({ user, onError }) {
   const [regEnabled, setRegEnabled] = useState(true);
   const [backingUp, setBackingUp] = useState(false);
   const [activeSection, setActiveSection] = useState('shares');
+  const [pwForm, setPwForm] = useState({ current: '', next: '', repeat: '' });
+  const [pwError, setPwError] = useState('');
+  const [pwMessage, setPwMessage] = useState('');
 
   const sections = [
     { key: 'shares', label: 'Freigaben verwalten' },
+    { key: 'password', label: 'Passwort ändern' },
     ...(user.admin ? [
       { key: 'registration', label: 'Registrierung erlauben' },
       { key: 'backup', label: 'Backup' }
@@ -53,6 +57,26 @@ export default function SharesTab({ user, onError }) {
       setError(e.message);
     } finally {
       setBackingUp(false);
+    }
+  };
+
+  const changePassword = async e => {
+    e.preventDefault();
+    setPwError('');
+    setPwMessage('');
+    if (pwForm.next !== pwForm.repeat) {
+      setPwError('Die neuen Passwörter stimmen nicht überein.');
+      return;
+    }
+    try {
+      await api('/auth/password', {
+        method: 'PUT',
+        body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.next })
+      });
+      setPwMessage('Passwort erfolgreich geändert.');
+      setPwForm({ current: '', next: '', repeat: '' });
+    } catch (e) {
+      setPwError(e.message);
     }
   };
 
@@ -151,6 +175,45 @@ export default function SharesTab({ user, onError }) {
                   </div>
                 )}
               </div>
+            </>
+          )}
+
+          {activeSection === 'password' && (
+            <>
+              <h2 style={{ marginTop: 0 }}>Passwort ändern</h2>
+              <form onSubmit={changePassword} style={{ marginTop: '1rem', maxWidth: '360px' }}>
+                <label>
+                  Aktuelles Passwort
+                  <input
+                    type="password"
+                    required
+                    value={pwForm.current}
+                    onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))}
+                  />
+                </label>
+                <label>
+                  Neues Passwort
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={pwForm.next}
+                    onChange={e => setPwForm(f => ({ ...f, next: e.target.value }))}
+                  />
+                </label>
+                <label>
+                  Neues Passwort wiederholen
+                  <input
+                    type="password"
+                    required
+                    value={pwForm.repeat}
+                    onChange={e => setPwForm(f => ({ ...f, repeat: e.target.value }))}
+                  />
+                </label>
+                {pwError && <p style={{ color: 'var(--rose-500)', fontSize: '0.9rem' }}>❌ {pwError}</p>}
+                {pwMessage && <p style={{ color: 'var(--teal-700)', fontSize: '0.9rem' }}>✓ {pwMessage}</p>}
+                <button className="primary" style={{ marginTop: '1rem' }}>Passwort ändern</button>
+              </form>
             </>
           )}
 

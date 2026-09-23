@@ -44,6 +44,19 @@ router.put('/registration-status', authenticate, (req, res) => {
   res.json({ enabled });
 });
 
+router.put('/password', authenticate, (req, res) => {
+  const { currentPassword, newPassword } = req.body || {};
+  if (typeof newPassword !== 'string' || newPassword.length < 8) {
+    return res.status(400).json({ error: 'Neues Passwort muss mindestens 8 Zeichen haben.' });
+  }
+  const user = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+  if (!user || !bcrypt.compareSync(currentPassword || '', user.password_hash)) {
+    return res.status(401).json({ error: 'Aktuelles Passwort ist falsch.' });
+  }
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(bcrypt.hashSync(newPassword, 12), req.user.id);
+  res.json({ success: true });
+});
+
 // Aktuellen User anhand des Tokens zurückgeben
 router.get('/me', (req, res) => {
   const auth = req.headers.authorization || '';

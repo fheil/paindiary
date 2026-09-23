@@ -880,6 +880,11 @@ main {
   color: var(--slate-700);
 }
 
+.week-today {
+  font-weight: 600;
+  color: var(--teal-700);
+}
+
 .weekly-table-wrapper {
   overflow-x: auto;
   background: #fff;

@@ -9,17 +9,18 @@
   --amber-500: #f59e0b;
   --emerald-500: #10b981;
   
-  /* Pain Scale Colors */
-  --pain-green-light: #86efac;
-  --pain-green-dark: #22c55e;
-  --pain-yellow-light: #fde047;
-  --pain-yellow-dark: #eab308;
-  --pain-orange-light: #fed7aa;
-  --pain-orange-dark: #fb923c;
-  --pain-red-light: #fca5a5;
-  --pain-red-dark: #ef4444;
-  --pain-violet-light: #d8b4fe;
-  --pain-violet-dark: #a855f7;
+  /* Pain Scale Colors (0-10), single source of truth for Journal, Dashboard,
+     Tabellenblatt and the entry-form slider. Values sampled from farben.png. */
+  --pain-0: #076A36;
+  --pain-1: #14A84D;
+  --pain-2: #9CDB59;
+  --pain-3: #FEE102;
+  --pain-4: #FEB403;
+  --pain-5: #FE6905;
+  --pain-6: #F00E1A;
+  --pain-7: #CF0F26;
+  --pain-8: #922FCB;
+  --pain-9: #601983;
 }
 
 * {
@@ -33,19 +34,6 @@ body {
   color: var(--slate-700);
   min-height: 100vh;
 }
-
-/* ===== Pain Scale Colors (0-10) ===== */
-.pain.p0 { background: var(--pain-green-light); }
-.pain.p1 { background: var(--pain-green-dark); }
-.pain.p2 { background: var(--pain-yellow-light); }
-.pain.p3 { background: var(--pain-yellow-dark); }
-.pain.p4 { background: var(--pain-orange-light); }
-.pain.p5 { background: var(--pain-orange-dark); }
-.pain.p6 { background: var(--pain-red-light); }
-.pain.p7 { background: var(--pain-red-dark); }
-.pain.p8 { background: var(--pain-violet-light); }
-.pain.p9 { background: var(--pain-violet-dark); }
-.pain.p10 { background: var(--pain-violet-dark); }
 
 /* ===== AUTH ===== */
 .auth {
@@ -155,17 +143,17 @@ input[type='range'] {
   padding: 0;
   height: 8px;
   border-radius: 5px;
-  background: linear-gradient(to right, 
-    var(--pain-green-light) 0%, 
-    var(--pain-green-dark) 10%, 
-    var(--pain-yellow-light) 20%, 
-    var(--pain-yellow-dark) 30%, 
-    var(--pain-orange-light) 40%, 
-    var(--pain-orange-dark) 50%, 
-    var(--pain-red-light) 60%, 
-    var(--pain-red-dark) 70%, 
-    var(--pain-violet-light) 80%, 
-    var(--pain-violet-dark) 100%);
+  background: linear-gradient(to right,
+    var(--pain-0) 0%,
+    var(--pain-1) 10%,
+    var(--pain-2) 20%,
+    var(--pain-3) 30%,
+    var(--pain-4) 40%,
+    var(--pain-5) 50%,
+    var(--pain-6) 60%,
+    var(--pain-7) 70%,
+    var(--pain-8) 80%,
+    var(--pain-9) 100%);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
@@ -538,50 +526,18 @@ main {
   opacity: 0.85;
 }
 
-/* Pain Scale - 0-10 with new colors */
-.pain.p0 {
-  background: var(--pain-green-light);
-}
-
-.pain.p1 {
-  background: var(--pain-green-dark);
-}
-
-.pain.p2 {
-  background: var(--pain-yellow-light);
-}
-
-.pain.p3 {
-  background: var(--pain-yellow-dark);
-}
-
-.pain.p4 {
-  background: var(--pain-orange-light);
-}
-
-.pain.p5 {
-  background: var(--pain-orange-dark);
-}
-
-.pain.p6 {
-  background: var(--pain-red-light);
-}
-
-.pain.p7 {
-  background: var(--pain-red-dark);
-}
-
-.pain.p8 {
-  background: var(--pain-violet-light);
-}
-
-.pain.p9 {
-  background: var(--pain-violet-dark);
-}
-
-.pain.p10 {
-  background: var(--pain-violet-dark);
-}
+/* Pain Scale - 0-10, reuses the central --pain-N variables */
+.pain.p0 { background: var(--pain-0); }
+.pain.p1 { background: var(--pain-1); }
+.pain.p2 { background: var(--pain-2); }
+.pain.p3 { background: var(--pain-3); }
+.pain.p4 { background: var(--pain-4); }
+.pain.p5 { background: var(--pain-5); }
+.pain.p6 { background: var(--pain-6); }
+.pain.p7 { background: var(--pain-7); }
+.pain.p8 { background: var(--pain-8); }
+.pain.p9 { background: var(--pain-9); }
+.pain.p10 { background: var(--pain-9); }
 
 .entry-content {
   display: flex;
@@ -646,109 +602,6 @@ main {
 .empty h3 {
   margin: 0.5rem 0;
   color: var(--slate-700);
-}
-
-/* ===== DASHBOARD ===== */
-.chart-card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 1.5rem;
-  box-shadow: 0 20px 40px -25px rgba(15, 118, 110, 0.25);
-}
-
-.chart-card h2 {
-  margin-top: 0;
-}
-
-.bars {
-  display: grid;
-  grid-template-columns: repeat(11, 1fr);
-  gap: 0.8rem;
-  align-items: flex-end;
-  height: 250px;
-  margin-top: 1.5rem;
-}
-
-.bar-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  justify-content: flex-end;
-}
-
-/* Bar colors matching pain scale */
-.bar.bar-0 {
-  background: var(--pain-green-light);
-}
-
-.bar.bar-1 {
-  background: var(--pain-green-dark);
-}
-
-.bar.bar-2 {
-  background: var(--pain-yellow-light);
-}
-
-.bar.bar-3 {
-  background: var(--pain-yellow-dark);
-}
-
-.bar.bar-4 {
-  background: var(--pain-orange-light);
-}
-
-.bar.bar-5 {
-  background: var(--pain-orange-dark);
-}
-
-.bar.bar-6 {
-  background: var(--pain-red-light);
-}
-
-.bar.bar-7 {
-  background: var(--pain-red-dark);
-}
-
-.bar.bar-8 {
-  background: var(--pain-violet-light);
-}
-
-.bar.bar-9 {
-  background: var(--pain-violet-dark);
-}
-
-.bar.bar-10 {
-  background: var(--pain-violet-dark);
-}
-
-.bar {
-  width: 100%;
-  border-radius: 8px 8px 0 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  min-height: 4px;
-  position: relative;
-  transition: all 0.2s;
-}
-
-.bar:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.bar span {
-  color: #1f2937;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding-bottom: 0.3rem;
-}
-
-.bar-wrap small {
-  color: var(--slate-400);
-  font-size: 0.8rem;
-  margin-top: 0.4rem;
 }
 
 /* ===== STATS ===== */
@@ -1076,17 +929,17 @@ main {
   color: #fff;
 }
 
-.pain-cell.p0 { background: var(--pain-green-light); }
-.pain-cell.p1 { background: var(--pain-green-dark); }
-.pain-cell.p2 { background: var(--pain-yellow-light); }
-.pain-cell.p3 { background: var(--pain-yellow-dark); }
-.pain-cell.p4 { background: var(--pain-orange-light); }
-.pain-cell.p5 { background: var(--pain-orange-dark); }
-.pain-cell.p6 { background: var(--pain-red-light); }
-.pain-cell.p7 { background: var(--pain-red-dark); }
-.pain-cell.p8 { background: var(--pain-violet-light); }
-.pain-cell.p9 { background: var(--pain-violet-dark); }
-.pain-cell.p10 { background: var(--pain-violet-dark); }
+.pain-cell.p0 { background: var(--pain-0); }
+.pain-cell.p1 { background: var(--pain-1); }
+.pain-cell.p2 { background: var(--pain-2); }
+.pain-cell.p3 { background: var(--pain-3); }
+.pain-cell.p4 { background: var(--pain-4); }
+.pain-cell.p5 { background: var(--pain-5); }
+.pain-cell.p6 { background: var(--pain-6); }
+.pain-cell.p7 { background: var(--pain-7); }
+.pain-cell.p8 { background: var(--pain-8); }
+.pain-cell.p9 { background: var(--pain-9); }
+.pain-cell.p10 { background: var(--pain-9); }
 
 .legends {
   display: grid;

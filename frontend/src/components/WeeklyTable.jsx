@@ -192,7 +192,7 @@ export default function WeeklyTable({ entries }) {
             {visibleHours.map(hour => {
               const isOutsideCompact = hour < config.compact_start || hour >= config.compact_end;
               return (
-                <tr key={hour} style={!compactView && isOutsideCompact ? { background: '#f1f5f9' } : undefined}>
+                <tr key={hour} style={!compactView && isOutsideCompact ? { background: '#e2e8f0' } : undefined}>
                   <td className="hour-label">{hour}-{hour + 1}</td>
                   {DAY_NAMES.map((_, dayIndex) => {
                     const cell = grid[dayIndex][hour];

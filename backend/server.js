@@ -6,6 +6,7 @@ import entriesRoutes from './routes/entries.js';
 import sharesRoutes from './routes/shares.js';
 import activitiesRoutes from './routes/activities.js';
 import medicationsRoutes from './routes/medications.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/entries', entriesRoutes);
 app.use('/api/shares', sharesRoutes);
 app.use('/api/activities', activitiesRoutes);
 app.use('/api/medications', medicationsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error-Handler
 app.use((err, _req, res, _next) => { 

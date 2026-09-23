@@ -90,4 +90,5 @@ if (!userColumns.includes('admin')) {
   db.exec('ALTER TABLE users ADD COLUMN admin INTEGER NOT NULL DEFAULT 0');
 }
 
+export { dataDir };
 export default db;

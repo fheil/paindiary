@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
-import { api } from '../api';
+import { Download, Plus, Trash2 } from 'lucide-react';
+import { api, downloadFile } from '../api';
 
 const cardStyle = {
   background: '#fff',
@@ -14,6 +14,7 @@ export default function SharesTab({ user, onError }) {
   const [shares, setShares] = useState({ viewers: [], owners: [] });
   const [error, setError] = useState('');
   const [regEnabled, setRegEnabled] = useState(true);
+  const [backingUp, setBackingUp] = useState(false);
 
   const reload = async () => {
     const data = await api('/shares');
@@ -39,6 +40,17 @@ export default function SharesTab({ user, onError }) {
     } catch (e) {
       setRegEnabled(regEnabled);
       setError(e.message);
+    }
+  };
+
+  const downloadBackup = async () => {
+    setBackingUp(true);
+    try {
+      await downloadFile('/admin/backup', `paindiary-backup-${new Date().toISOString().slice(0, 10)}.zip`);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBackingUp(false);
     }
   };
 
@@ -135,6 +147,18 @@ export default function SharesTab({ user, onError }) {
               {regEnabled ? 'Neue Registrierungen sind erlaubt' : 'Registrierung ist deaktiviert'}
             </span>
           </div>
+        </div>
+      )}
+
+      {user.admin && (
+        <div style={cardStyle}>
+          <h2 style={{ marginTop: 0 }}>Backup</h2>
+          <p className="muted" style={{ marginTop: '0.5rem' }}>
+            Lädt die SQLite-Datenbankdateien als ZIP herunter.
+          </p>
+          <button className="primary icon" onClick={downloadBackup} disabled={backingUp} style={{ marginTop: '0.75rem' }}>
+            <Download size={18} /> {backingUp ? 'Wird erstellt …' : 'Backup herunterladen'}
+          </button>
         </div>
       )}
     </div>

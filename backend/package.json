@@ -12,6 +12,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "better-sqlite3": "^11.3.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

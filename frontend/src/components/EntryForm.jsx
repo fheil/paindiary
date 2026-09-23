@@ -12,8 +12,12 @@ const FIELD_CONFIG = [
   { field: 'medication', label: 'Medikamente', placeholder: 'z. B. Ibuprofen 400mg' }
 ];
 
+const FREE_TEXT_FIELDS = FIELD_CONFIG.filter(({ field }) => field !== 'medication').map(({ field }) => field);
+
 export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
-  const [form, setForm] = useState(initial || blank());
+  const [form, setForm] = useState(
+    initial ? { ...initial, medication: initial.medication_name || '' } : blank()
+  );
   const [suggestions, setSuggestions] = useState({
     medication: [], situation: [], body_reaction: [], thoughts: [], feeling: [], behavior: []
   });
@@ -25,13 +29,16 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
     api('/entries')
       .then(entries => {
         const extracted = {};
-        FIELD_CONFIG.forEach(({ field }) => {
+        FREE_TEXT_FIELDS.forEach(field => {
           extracted[field] = [...new Set(entries.map(e => e[field]).filter(Boolean))];
         });
-        setSuggestions(extracted);
+        setSuggestions(s => ({ ...s, ...extracted }));
       })
       .catch(console.error);
     api('/activities').then(setActivities).catch(console.error);
+    api('/medications').then(meds => {
+      setSuggestions(s => ({ ...s, medication: meds.map(m => m.name) }));
+    }).catch(console.error);
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));

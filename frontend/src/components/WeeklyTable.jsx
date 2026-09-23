@@ -24,28 +24,14 @@ function fmtDate(d) {
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-// Assigns stable letters (A, B, C, ...) to distinct, non-empty trimmed values,
-// in order of first chronological appearance across ALL entries.
-function buildLegend(entriesSorted, getValue) {
-  const legend = new Map(); // value -> letter
-  let next = 0;
-  for (const e of entriesSorted) {
-    const raw = getValue(e);
-    if (!raw) continue;
-    const value = raw.trim();
-    if (!value || legend.has(value)) continue;
-    legend.set(value, String.fromCharCode(65 + (next % 26)) + (next >= 26 ? Math.floor(next / 26) : ''));
-    next++;
-  }
-  return legend;
-}
-
 export default function WeeklyTable({ entries }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [activities, setActivities] = useState([]);
+  const [medications, setMedications] = useState([]);
 
   useEffect(() => {
     api('/activities').then(setActivities).catch(console.error);
+    api('/medications').then(setMedications).catch(console.error);
   }, []);
 
   const sorted = useMemo(
@@ -53,12 +39,10 @@ export default function WeeklyTable({ entries }) {
     [entries]
   );
 
-  const medLegend = useMemo(() => buildLegend(sorted, e => e.medication), [sorted]);
-
   const weekStart = useMemo(() => addDays(startOfWeek(new Date()), weekOffset * 7), [weekOffset]);
   const weekEnd = addDays(weekStart, 6);
 
-  // grid[dayIndex][hour] = { pain, medLetter, actCode }
+  // grid[dayIndex][hour] = { pain, medCode, actCode }
   const grid = useMemo(() => {
     const g = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => null));
 
@@ -98,13 +82,12 @@ export default function WeeklyTable({ entries }) {
 
     // M: placed at its own medication_taken_at hour, independent of the pain span.
     for (const e of sorted) {
-      if (!e.medication_taken_at || !e.medication) continue;
-      const medLetter = medLegend.get(e.medication.trim());
-      if (medLetter) setSlot(new Date(e.medication_taken_at), { medLetter });
+      if (!e.medication_taken_at || !e.medication_code) continue;
+      setSlot(new Date(e.medication_taken_at), { medCode: e.medication_code });
     }
 
     return g;
-  }, [sorted, weekStart, medLegend]);
+  }, [sorted, weekStart]);
 
   const painClass = level => {
     if (level == null) return '';
@@ -159,7 +142,7 @@ export default function WeeklyTable({ entries }) {
                   return (
                     <React.Fragment key={dayIndex}>
                       <td className={`pain-cell ${painClass(cell?.pain)}`}>{cell?.pain ?? ''}</td>
-                      <td>{cell?.medLetter || ''}</td>
+                      <td>{cell?.medCode || ''}</td>
                       <td className="day-end">{cell?.actCode || ''}</td>
                     </React.Fragment>
                   );
@@ -173,9 +156,9 @@ export default function WeeklyTable({ entries }) {
       <div className="legends">
         <div className="legend-box">
           <h3>Medikamente</h3>
-          {medLegend.size === 0 && <p className="muted">Keine erfasst</p>}
-          {[...medLegend.entries()].map(([value, letter]) => (
-            <p key={value}><b>{letter}</b> = {value}</p>
+          {medications.length === 0 && <p className="muted">Keine erfasst</p>}
+          {medications.map(m => (
+            <p key={m.id}><b>{m.code}</b> = {m.name}</p>
           ))}
         </div>
         <div className="legend-box">

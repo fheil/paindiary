@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
+import { findOrCreateMedication } from './medications.js';
 
 const dataDir = process.env.DATA_DIR || '/app/data';
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -53,6 +54,12 @@ CREATE TABLE IF NOT EXISTS activities (
   label TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS medications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  code TEXT NOT NULL UNIQUE
+);
+
 INSERT OR IGNORE INTO settings (key, value) VALUES ('registration_enabled', 'true');
 
 INSERT OR IGNORE INTO activities (code, label) VALUES
@@ -86,6 +93,28 @@ if (!entryColumns.includes('pain_end_at')) {
 }
 if (!entryColumns.includes('medication_taken_at')) {
   db.exec("ALTER TABLE entries ADD COLUMN medication_taken_at TEXT NOT NULL DEFAULT ''");
+}
+if (!entryColumns.includes('medication_id')) {
+  db.exec("ALTER TABLE entries ADD COLUMN medication_id INTEGER REFERENCES medications(id) ON DELETE SET NULL");
+}
+
+// One-time backfill: link legacy free-text medication values (from before the
+// medications table existed) to it, generating codes the same way new saves do.
+const legacyMedicationRows = db.prepare(
+  "SELECT id, medication FROM entries WHERE medication_id IS NULL AND medication <> ''"
+).all();
+if (legacyMedicationRows.length > 0) {
+  const idForName = new Map();
+  const linkEntry = db.prepare('UPDATE entries SET medication_id = ? WHERE id = ?');
+  for (const row of legacyMedicationRows) {
+    const key = row.medication.trim().toLowerCase();
+    let medicationId = idForName.get(key);
+    if (!medicationId) {
+      medicationId = findOrCreateMedication(db, row.medication);
+      idForName.set(key, medicationId);
+    }
+    linkEntry.run(medicationId, row.id);
+  }
 }
 
 export default db;

@@ -34,7 +34,7 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
           <strong>Verhalten:</strong> {entry.behavior || '–'}
         </p>
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
-          <strong>Medikamente:</strong> {entry.medication || '–'}
+          <strong>Medikamente:</strong> {entry.medication_name || '–'}
           {entry.medication_taken_at && (
             <> ({new Date(entry.medication_taken_at).toLocaleString('de-DE')})</>
           )}

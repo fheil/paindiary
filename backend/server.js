@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.js';
 import entriesRoutes from './routes/entries.js';
 import sharesRoutes from './routes/shares.js';
 import activitiesRoutes from './routes/activities.js';
+import medicationsRoutes from './routes/medications.js';
 import db from './db.js';
 
 dotenv.config();
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/entries', entriesRoutes);
 app.use('/api/shares', sharesRoutes);
 app.use('/api/activities', activitiesRoutes);
+app.use('/api/medications', medicationsRoutes);
 
 // ============ ADMIN SETUP ENDPOINT ============
 app.post('/api/admin/make-admin/:username', (req, res) => {

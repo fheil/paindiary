@@ -189,21 +189,24 @@ export default function WeeklyTable({ entries }) {
             </tr>
           </thead>
           <tbody>
-            {visibleHours.map(hour => (
-              <tr key={hour}>
-                <td className="hour-label">{hour}-{hour + 1}</td>
-                {DAY_NAMES.map((_, dayIndex) => {
-                  const cell = grid[dayIndex][hour];
-                  return (
-                    <React.Fragment key={dayIndex}>
-                      <td className={`pain-cell ${painClass(cell?.pain)}`} title={painTitle(cell)}>{cell?.pain ?? ''}</td>
-                      <td>{cell?.medCode || ''}</td>
-                      <td className="day-end">{cell?.actCode || ''}</td>
-                    </React.Fragment>
-                  );
-                })}
-              </tr>
-            ))}
+            {visibleHours.map(hour => {
+              const isOutsideCompact = hour < config.compact_start || hour >= config.compact_end;
+              return (
+                <tr key={hour} style={!compactView && isOutsideCompact ? { background: '#f1f5f9' } : undefined}>
+                  <td className="hour-label">{hour}-{hour + 1}</td>
+                  {DAY_NAMES.map((_, dayIndex) => {
+                    const cell = grid[dayIndex][hour];
+                    return (
+                      <React.Fragment key={dayIndex}>
+                        <td className={`pain-cell ${painClass(cell?.pain)}`} title={painTitle(cell)}>{cell?.pain ?? ''}</td>
+                        <td>{cell?.medCode || ''}</td>
+                        <td className="day-end">{cell?.actCode || ''}</td>
+                      </React.Fragment>
+                    );
+                  })}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

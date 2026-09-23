@@ -203,16 +203,18 @@ function MainApp({ user, logout }) {
                     const count = displayedEntries.filter(e => e.pain_level === level).length;
                     return (
                       <div key={level} style={{ textAlign: 'center' }}>
+                        <small>{level}</small>
                         <div
                           className={`pain p${level}`}
                           style={{
                             height: `${Math.max(30, (count / displayedEntries.length) * 150)}px`,
                             borderRadius: '8px',
-                            marginBottom: '0.5rem'
+                            marginTop: '0.5rem',
+                            fontSize: '0.8rem'
                           }}
-                        />
-                        <small>{level}</small>
-                        {count > 0 && <p style={{ fontSize: '0.8rem', margin: '0.3rem 0 0' }}>{count}x</p>}
+                        >
+                          {count > 0 && `${count}x`}
+                        </div>
                       </div>
                     );
                   })}

@@ -1,6 +1,10 @@
 import React from 'react';
 import { Trash2, Eye } from 'lucide-react';
 
+const fmt = iso => new Date(iso).toLocaleString('de-DE', {
+  day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+});
+
 export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
   return (
     <div className="entry">
@@ -10,9 +14,9 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
       </div>
       <div>
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'var(--slate-400)' }}>
-          <strong>Schmerzbeginn:</strong> {new Date(entry.occurred_at).toLocaleString('de-DE')}
+          <strong>Schmerzbeginn:</strong> {fmt(entry.occurred_at)}
           {entry.pain_end_at && (
-            <> · <strong>Schmerzende:</strong> {new Date(entry.pain_end_at).toLocaleString('de-DE')}</>
+            <> · <strong>Schmerzende:</strong> {fmt(entry.pain_end_at)}</>
           )}
         </p>
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
@@ -36,7 +40,7 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
         <p style={{ margin: '0.3rem 0', fontSize: '0.9rem' }}>
           <strong>Medikamente:</strong> {entry.medication_name || '–'}
           {entry.medication_taken_at && (
-            <> ({new Date(entry.medication_taken_at).toLocaleString('de-DE')})</>
+            <> ({fmt(entry.medication_taken_at)})</>
           )}
         </p>
       </div>

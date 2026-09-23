@@ -896,7 +896,7 @@ main {
 }
 
 .options-nav button:hover {
-  background: #e2e8f0;
+  color: var(--teal-700);
 }
 
 .options-nav button.active {

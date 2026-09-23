@@ -42,7 +42,7 @@ export default function WeeklyTable({ entries }) {
   const weekStart = useMemo(() => addDays(startOfWeek(new Date()), weekOffset * 7), [weekOffset]);
   const weekEnd = addDays(weekStart, 6);
 
-  // grid[dayIndex][hour] = { pain, medCode, actCode }
+  // grid[dayIndex][hour] = { pain, medCode, actCode, situation, bodyReaction }
   const grid = useMemo(() => {
     const g = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => null));
 
@@ -68,15 +68,22 @@ export default function WeeklyTable({ entries }) {
       const spanHours = end ? (end - start) / 3600000 : 0;
       const validEnd = end && end >= start && spanHours <= MAX_SPAN_HOURS ? end : null;
 
+      const painInfo = {
+        pain: e.pain_level,
+        actCode: e.activity_code || null,
+        situation: e.situation || '',
+        bodyReaction: e.body_reaction || ''
+      };
+
       if (validEnd) {
         let cursor = new Date(start);
         cursor.setMinutes(0, 0, 0);
         while (cursor <= validEnd) {
-          setSlot(cursor, { pain: e.pain_level, actCode: e.activity_code || null });
+          setSlot(cursor, painInfo);
           cursor = new Date(cursor.getTime() + 3600000);
         }
       } else {
-        setSlot(start, { pain: e.pain_level, actCode: e.activity_code || null });
+        setSlot(start, painInfo);
       }
     }
 
@@ -113,6 +120,11 @@ export default function WeeklyTable({ entries }) {
     if (level == null) return '';
     const clamped = Math.max(0, Math.min(10, level));
     return `p${clamped}`;
+  };
+
+  const painTitle = cell => {
+    if (!cell || cell.pain == null) return undefined;
+    return `Situation: ${cell.situation || '–'}\nKörperreaktion: ${cell.bodyReaction || '–'}`;
   };
 
   return (
@@ -164,7 +176,7 @@ export default function WeeklyTable({ entries }) {
                   const cell = grid[dayIndex][hour];
                   return (
                     <React.Fragment key={dayIndex}>
-                      <td className={`pain-cell ${painClass(cell?.pain)}`}>{cell?.pain ?? ''}</td>
+                      <td className={`pain-cell ${painClass(cell?.pain)}`} title={painTitle(cell)}>{cell?.pain ?? ''}</td>
                       <td>{cell?.medCode || ''}</td>
                       <td className="day-end">{cell?.actCode || ''}</td>
                     </React.Fragment>

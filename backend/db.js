@@ -1,7 +1,6 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
-import { findOrCreateMedication } from './medications.js';
 
 const dataDir = process.env.DATA_DIR || '/app/data';
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -20,16 +19,32 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS activities (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code TEXT NOT NULL UNIQUE,
+  label TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS medications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  code TEXT NOT NULL UNIQUE
+);
+
 CREATE TABLE IF NOT EXISTS entries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   occurred_at TEXT NOT NULL,
+  pain_end_at TEXT NOT NULL DEFAULT '',
+  medication_taken_at TEXT NOT NULL DEFAULT '',
   pain_level INTEGER NOT NULL DEFAULT 0 CHECK (pain_level BETWEEN 0 AND 10),
   situation TEXT NOT NULL DEFAULT '',
   body_reaction TEXT NOT NULL DEFAULT '',
   thoughts TEXT NOT NULL DEFAULT '',
   feeling TEXT NOT NULL DEFAULT '',
   behavior TEXT NOT NULL DEFAULT '',
+  activity_id INTEGER REFERENCES activities(id) ON DELETE SET NULL,
+  medication_id INTEGER REFERENCES medications(id) ON DELETE SET NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -46,18 +61,6 @@ CREATE TABLE IF NOT EXISTS shares (
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT
-);
-
-CREATE TABLE IF NOT EXISTS activities (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  code TEXT NOT NULL UNIQUE,
-  label TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS medications (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL UNIQUE,
-  code TEXT NOT NULL UNIQUE
 );
 
 INSERT OR IGNORE INTO settings (key, value) VALUES ('registration_enabled', 'true');
@@ -80,47 +83,5 @@ INSERT OR IGNORE INTO activities (code, label) VALUES
   ('U', 'Untersuchungen / Behandlungen'),
   ('Eink', 'Einkaufen');
 `);
-
-const entryColumns = db.prepare("PRAGMA table_info(entries)").all().map(c => c.name);
-if (!entryColumns.includes('medication')) {
-  db.exec("ALTER TABLE entries ADD COLUMN medication TEXT NOT NULL DEFAULT ''");
-}
-if (!entryColumns.includes('activity_id')) {
-  db.exec("ALTER TABLE entries ADD COLUMN activity_id INTEGER REFERENCES activities(id) ON DELETE SET NULL");
-}
-if (!entryColumns.includes('pain_end_at')) {
-  db.exec("ALTER TABLE entries ADD COLUMN pain_end_at TEXT NOT NULL DEFAULT ''");
-}
-if (!entryColumns.includes('medication_taken_at')) {
-  db.exec("ALTER TABLE entries ADD COLUMN medication_taken_at TEXT NOT NULL DEFAULT ''");
-}
-if (!entryColumns.includes('medication_id')) {
-  db.exec("ALTER TABLE entries ADD COLUMN medication_id INTEGER REFERENCES medications(id) ON DELETE SET NULL");
-}
-
-// One-time backfill: link legacy free-text medication values (from before the
-// medications table existed) to it, generating codes the same way new saves do.
-const legacyMedicationRows = db.prepare(
-  "SELECT id, medication FROM entries WHERE medication_id IS NULL AND medication <> ''"
-).all();
-if (legacyMedicationRows.length > 0) {
-  const idForName = new Map();
-  const linkEntry = db.prepare('UPDATE entries SET medication_id = ? WHERE id = ?');
-  for (const row of legacyMedicationRows) {
-    const key = row.medication.trim().toLowerCase();
-    let medicationId = idForName.get(key);
-    if (!medicationId) {
-      medicationId = findOrCreateMedication(db, row.medication);
-      idForName.set(key, medicationId);
-    }
-    linkEntry.run(medicationId, row.id);
-  }
-}
-
-// Legacy free-text column is fully superseded by medication_id now that the
-// backfill above has run - drop it so entries only has one source of truth.
-if (db.prepare("PRAGMA table_info(entries)").all().some(c => c.name === 'medication')) {
-  db.exec('ALTER TABLE entries DROP COLUMN medication');
-}
 
 export default db;

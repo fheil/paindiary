@@ -204,16 +204,18 @@ function MainApp({ user, logout }) {
                     return (
                       <div key={level} style={{ textAlign: 'center' }}>
                         <small>{level}</small>
-                        <div
-                          className={`pain p${level}`}
-                          style={{
-                            height: `${Math.max(30, (count / displayedEntries.length) * 150)}px`,
-                            borderRadius: '8px',
-                            marginTop: '0.5rem',
-                            fontSize: '0.8rem'
-                          }}
-                        >
-                          {count > 0 && `${count}x`}
+                        <div style={{ height: '150px', display: 'flex', alignItems: 'flex-end', marginTop: '0.5rem' }}>
+                          <div
+                            className={`pain p${level}`}
+                            style={{
+                              height: `${Math.max(30, (count / displayedEntries.length) * 150)}px`,
+                              width: '100%',
+                              borderRadius: '8px',
+                              fontSize: '0.8rem'
+                            }}
+                          >
+                            {count > 0 && `${count}x`}
+                          </div>
                         </div>
                       </div>
                     );

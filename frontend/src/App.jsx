@@ -96,7 +96,7 @@ function MainApp({ user, logout }) {
           <BarChart3 size={17} /> Dashboard
         </button>
         <button className={tab === 'shares' ? 'active' : ''} onClick={() => setTab('shares')}>
-          <Share2 size={17} /> Freigaben
+          <Share2 size={17} /> Optionen
         </button>
       </nav>
       </div>

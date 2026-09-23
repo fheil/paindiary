@@ -89,11 +89,11 @@ function MainApp({ user, logout }) {
         <button className={tab === 'journal' ? 'active' : ''} onClick={() => setTab('journal')}>
           <Calendar size={17} /> Journal
         </button>
-        <button className={tab === 'dashboard' ? 'active' : ''} onClick={() => setTab('dashboard')}>
-          <BarChart3 size={17} /> Dashboard
-        </button>
         <button className={tab === 'table' ? 'active' : ''} onClick={() => setTab('table')}>
           <Table size={17} /> Tagebuch
+        </button>
+        <button className={tab === 'dashboard' ? 'active' : ''} onClick={() => setTab('dashboard')}>
+          <BarChart3 size={17} /> Dashboard
         </button>
         <button className={tab === 'shares' ? 'active' : ''} onClick={() => setTab('shares')}>
           <Share2 size={17} /> Freigaben

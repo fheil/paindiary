@@ -117,4 +117,10 @@ if (legacyMedicationRows.length > 0) {
   }
 }
 
+// Legacy free-text column is fully superseded by medication_id now that the
+// backfill above has run - drop it so entries only has one source of truth.
+if (db.prepare("PRAGMA table_info(entries)").all().some(c => c.name === 'medication')) {
+  db.exec('ALTER TABLE entries DROP COLUMN medication');
+}
+
 export default db;

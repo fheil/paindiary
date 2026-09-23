@@ -64,7 +64,14 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT
 );
 
+CREATE TABLE IF NOT EXISTS config (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  compact_start INTEGER NOT NULL DEFAULT 6,
+  compact_end INTEGER NOT NULL DEFAULT 22
+);
+
 INSERT OR IGNORE INTO settings (key, value) VALUES ('registration_enabled', 'true');
+INSERT OR IGNORE INTO config (id, compact_start, compact_end) VALUES (1, 6, 22);
 
 INSERT OR IGNORE INTO activities (code, label) VALUES
   ('Ar', 'Arbeit und Beruf'),

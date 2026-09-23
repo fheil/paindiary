@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { api } from '../api';
 
 const DAY_NAMES = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
@@ -28,11 +28,19 @@ export default function WeeklyTable({ entries }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [activities, setActivities] = useState([]);
   const [medications, setMedications] = useState([]);
+  const [config, setConfig] = useState({ compact_start: 6, compact_end: 22 });
+  const [compactView, setCompactView] = useState(true);
 
   useEffect(() => {
     api('/activities').then(setActivities).catch(console.error);
     api('/medications').then(setMedications).catch(console.error);
+    api('/config').then(setConfig).catch(console.error);
   }, []);
+
+  const visibleHours = useMemo(
+    () => compactView ? HOURS.filter(h => h >= config.compact_start && h < config.compact_end) : HOURS,
+    [compactView, config]
+  );
 
   const sorted = useMemo(
     () => [...entries].sort((a, b) => new Date(a.occurred_at) - new Date(b.occurred_at)),
@@ -130,7 +138,19 @@ export default function WeeklyTable({ entries }) {
   return (
     <div className="tab-content">
       <div className="section-title">
-        <h2>Tagebuch</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h2 style={{ margin: 0 }}>Tagebuch</h2>
+          <button
+            type="button"
+            className="icon"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}
+            onClick={() => setCompactView(v => !v)}
+            title={compactView ? 'Ganzen Tag anzeigen (0-24 Uhr)' : `Kompakt anzeigen (${config.compact_start}-${config.compact_end} Uhr)`}
+          >
+            <Clock size={16} />
+            {compactView ? 'Ganzer Tag' : 'Kompakt'}
+          </button>
+        </div>
         <div className="week-nav">
           <button type="button" className="icon" onClick={() => setWeekOffset(w => w - 1)}>
             <ChevronLeft size={18} />
@@ -169,7 +189,7 @@ export default function WeeklyTable({ entries }) {
             </tr>
           </thead>
           <tbody>
-            {HOURS.map(hour => (
+            {visibleHours.map(hour => (
               <tr key={hour}>
                 <td className="hour-label">{hour}-{hour + 1}</td>
                 {DAY_NAMES.map((_, dayIndex) => {

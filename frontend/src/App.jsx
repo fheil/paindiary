@@ -22,6 +22,7 @@ function MainApp({ user, logout }) {
       ]);
       setEntries(entriesRes);
       setShares(sharesRes);
+      setViewingUserId(v => (v && !sharesRes.owners.some(o => o.id === v)) ? null : v);
     } catch (e) {
       setError(e.message);
     }
@@ -177,7 +178,7 @@ function MainApp({ user, logout }) {
 
         {tab === 'table' && <WeeklyTable entries={displayedEntries} />}
 
-        {tab === 'shares' && <SharesTab user={user} onError={setError} />}
+        {tab === 'shares' && <SharesTab user={user} onError={setError} onDataChanged={load} />}
       </main>
     </div>
   );

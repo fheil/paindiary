@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Download, Plus, Trash2 } from 'lucide-react';
 import { api, downloadFile } from '../api';
 
-export default function SharesTab({ user, onError }) {
+export default function SharesTab({ user, onError, onDataChanged }) {
   const [users, setUsers] = useState([]);
   const [shares, setShares] = useState({ viewers: [], owners: [] });
   const [error, setError] = useState('');
@@ -92,6 +92,7 @@ export default function SharesTab({ user, onError }) {
     try {
       await api(`/admin/users/${u.id}`, { method: 'DELETE' });
       await loadAllUsers();
+      await onDataChanged?.();
     } catch (e) {
       setError(e.message);
     }
@@ -102,6 +103,7 @@ export default function SharesTab({ user, onError }) {
       await api('/shares', { method: 'POST', body: JSON.stringify({ viewer_id: userId }) });
       setError('');
       await reload();
+      await onDataChanged?.();
     } catch (e) {
       setError(e.message);
     }
@@ -112,6 +114,7 @@ export default function SharesTab({ user, onError }) {
       await api(`/shares/${userId}`, { method: 'DELETE' });
       setError('');
       await reload();
+      await onDataChanged?.();
     } catch (e) {
       setError(e.message);
     }

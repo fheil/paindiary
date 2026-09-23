@@ -93,7 +93,7 @@ function MainApp({ user, logout }) {
           <BarChart3 size={17} /> Dashboard
         </button>
         <button className={tab === 'table' ? 'active' : ''} onClick={() => setTab('table')}>
-          <Table size={17} /> Tabellenblatt
+          <Table size={17} /> Tagebuch
         </button>
         <button className={tab === 'shares' ? 'active' : ''} onClick={() => setTab('shares')}>
           <Share2 size={17} /> Freigaben

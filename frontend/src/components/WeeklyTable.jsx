@@ -130,7 +130,7 @@ export default function WeeklyTable({ entries }) {
   return (
     <div className="tab-content">
       <div className="section-title">
-        <h2>Tabellenblatt</h2>
+        <h2>Tagebuch</h2>
         <div className="week-nav">
           <button type="button" className="icon" onClick={() => setWeekOffset(w => w - 1)}>
             <ChevronLeft size={18} />

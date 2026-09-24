@@ -12,7 +12,7 @@ export default function EntryCard({ entry, onEdit, onDuplicate, onDelete, isRead
         <b>{entry.pain_level}</b>
         <span>/10</span>
       </div>
-      <div>
+      <div style={{ minWidth: 0 }}>
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'var(--slate-400)' }}>
           <strong>Schmerzbeginn:</strong> {fmt(entry.occurred_at)}
           {entry.pain_end_at && (

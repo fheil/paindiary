@@ -16,7 +16,7 @@ const FREE_TEXT_FIELDS = FIELD_CONFIG.filter(({ field }) => field !== 'medicatio
 
 export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
   const [form, setForm] = useState(
-    initial ? { ...initial, medication: initial.medication_name || '' } : blank()
+    initial ? { ...initial, medication: initial.medication_name || initial.medication || '' } : blank()
   );
   const [suggestions, setSuggestions] = useState({
     medication: [], situation: [], body_reaction: [], thoughts: [], feeling: [], behavior: []
@@ -59,7 +59,7 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
         <div className="modal-head">
           <div>
             <p className="eyebrow">EINTRAG</p>
-            <h2>{initial ? 'Eintrag bearbeiten' : 'Neuer Eintrag'}</h2>
+            <h2>{initial?.id ? 'Eintrag bearbeiten' : 'Neuer Eintrag'}</h2>
             {isReadOnly && <p style={{ color: '#f59e0b', fontSize: '0.9rem', marginTop: '0.5rem' }}>👁️ Nur-Lesen</p>}
           </div>
           <button type="button" className="icon" onClick={onClose}>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, ChevronLeft, Plus } from 'lucide-react';
-import { api } from '../api';
+import { api, blank } from '../api';
 import EntryForm from './EntryForm';
 import EntryCard from './EntryCard';
 
@@ -88,6 +88,22 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
     }
   };
 
+  const duplicate = entry => {
+    setEditing({
+      occurred_at: new Date().toISOString().slice(0, 16),
+      pain_end_at: entry.pain_end_at || '',
+      medication_taken_at: entry.medication_taken_at || '',
+      pain_level: entry.pain_level,
+      situation: entry.situation || '',
+      body_reaction: entry.body_reaction || '',
+      thoughts: entry.thoughts || '',
+      feeling: entry.feeling || '',
+      behavior: entry.behavior || '',
+      medication: entry.medication_name || '',
+      activity_id: entry.activity_id || ''
+    });
+  };
+
   const remove = async id => {
     if (confirm('Eintrag wirklich löschen?')) {
       try {
@@ -138,6 +154,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
             key={entry.id}
             entry={entry}
             onEdit={setEditing}
+            onDuplicate={duplicate}
             onDelete={remove}
             isReadOnly={isReadOnly}
           />
@@ -157,7 +174,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
       <div className="section-title">
         <h2>Meine Einträge</h2>
         {!isReadOnly && (
-          <button className="primary icon" onClick={() => setEditing({})}>
+          <button className="primary icon" onClick={() => setEditing(blank())}>
             <Plus size={18} /> Neuer Eintrag
           </button>
         )}
@@ -232,7 +249,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
 
       {editing !== null && (
         <EntryForm
-          initial={editing.id ? editing : null}
+          initial={editing}
           onSave={save}
           onClose={() => setEditing(null)}
           isReadOnly={isReadOnly}

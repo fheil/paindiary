@@ -1,11 +1,11 @@
 import React from 'react';
-import { Trash2, Eye } from 'lucide-react';
+import { Trash2, Eye, Copy } from 'lucide-react';
 
 const fmt = iso => new Date(iso).toLocaleString('de-DE', {
   day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
 });
 
-export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
+export default function EntryCard({ entry, onEdit, onDuplicate, onDelete, isReadOnly }) {
   return (
     <div className="entry">
       <div className={`pain p${entry.pain_level}`}>
@@ -48,6 +48,11 @@ export default function EntryCard({ entry, onEdit, onDelete, isReadOnly }) {
         <button className="icon" onClick={() => onEdit(entry)}>
           <Eye size={18} />
         </button>
+        {!isReadOnly && (
+          <button className="icon" onClick={() => onDuplicate(entry)}>
+            <Copy size={18} />
+          </button>
+        )}
         {!isReadOnly && (
           <button className="icon danger" onClick={() => onDelete(entry.id)}>
             <Trash2 size={18} />

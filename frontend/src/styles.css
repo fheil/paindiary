@@ -292,6 +292,15 @@ button {
   transform: none;
 }
 
+.primary.danger {
+  background: var(--rose-500);
+}
+
+.primary.danger:hover {
+  background: #be123c;
+  box-shadow: 0 8px 16px rgba(244, 63, 94, 0.3);
+}
+
 .secondary {
   background: #e2e8f0;
   color: var(--slate-700);

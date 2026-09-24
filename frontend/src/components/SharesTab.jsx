@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, Plus, ShieldMinus, ShieldPlus, Trash2 } from 'lucide-react';
 import { api, downloadFile } from '../api';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function SharesTab({ user, onError, onDataChanged }) {
   const [users, setUsers] = useState([]);
@@ -16,6 +17,8 @@ export default function SharesTab({ user, onError, onDataChanged }) {
   const [dayConfig, setDayConfig] = useState({ compact_start: 6, compact_end: 22 });
   const [dayConfigError, setDayConfigError] = useState('');
   const [dayConfigMessage, setDayConfigMessage] = useState('');
+  const [adminTarget, setAdminTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const sections = [
     { key: 'shares', label: 'Freigaben verwalten' },
@@ -110,12 +113,9 @@ export default function SharesTab({ user, onError, onDataChanged }) {
   };
 
   const toggleAdmin = async u => {
-    const question = u.admin
-      ? `"${u.username}" die Admin-Rechte entziehen?`
-      : `"${u.username}" zum Admin machen?`;
-    if (!confirm(question)) return;
     try {
       await api(`/admin/users/${u.id}/admin`, { method: 'PUT', body: JSON.stringify({ admin: !u.admin }) });
+      setAdminTarget(null);
       await loadAllUsers();
     } catch (e) {
       setError(e.message);
@@ -123,11 +123,9 @@ export default function SharesTab({ user, onError, onDataChanged }) {
   };
 
   const deleteUser = async u => {
-    if (!confirm(`Benutzer "${u.username}" wirklich löschen? Dabei werden auch ALLE seine Einträge unwiderruflich gelöscht.`)) {
-      return;
-    }
     try {
       await api(`/admin/users/${u.id}`, { method: 'DELETE' });
+      setDeleteTarget(null);
       await loadAllUsers();
       await onDataChanged?.();
     } catch (e) {
@@ -289,11 +287,11 @@ export default function SharesTab({ user, onError, onDataChanged }) {
                     </div>
                     {u.id !== user.id && (
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="secondary" onClick={() => toggleAdmin(u)}>
+                        <button className="secondary" onClick={() => setAdminTarget(u)}>
                           {u.admin ? <><ShieldMinus size={16} /> Admin entziehen</> : <><ShieldPlus size={16} /> Zum Admin machen</>}
                         </button>
                         {!u.admin && (
-                          <button className="secondary" onClick={() => deleteUser(u)}>
+                          <button className="secondary" onClick={() => setDeleteTarget(u)}>
                             <Trash2 size={16} /> Löschen
                           </button>
                         )}
@@ -380,6 +378,26 @@ export default function SharesTab({ user, onError, onDataChanged }) {
           )}
         </div>
       </div>
+
+      {adminTarget && (
+        <ConfirmDialog
+          message={adminTarget.admin
+            ? `"${adminTarget.username}" die Admin-Rechte entziehen?`
+            : `"${adminTarget.username}" zum Admin machen?`}
+          confirmLabel={adminTarget.admin ? 'Entziehen' : 'Admin machen'}
+          danger={!!adminTarget.admin}
+          onConfirm={() => toggleAdmin(adminTarget)}
+          onCancel={() => setAdminTarget(null)}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          message={`Benutzer "${deleteTarget.username}" wirklich löschen? Dabei werden auch ALLE seine Einträge unwiderruflich gelöscht.`}
+          onConfirm={() => deleteUser(deleteTarget)}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

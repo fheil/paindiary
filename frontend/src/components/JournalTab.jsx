@@ -3,6 +3,7 @@ import { Calendar, ChevronLeft, Plus } from 'lucide-react';
 import { api, blank } from '../api';
 import EntryForm from './EntryForm';
 import EntryCard from './EntryCard';
+import ConfirmDialog from './ConfirmDialog';
 
 const MONTH_NAMES = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
@@ -36,6 +37,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
   const [viewedEntries, setViewedEntries] = useState([]);
   const [expandedYears, setExpandedYears] = useState(new Set());
   const [editing, setEditing] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
 
   const fetchMonth = ym => api(`/entries?month=${ym}`);
 
@@ -105,13 +107,12 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
   };
 
   const remove = async id => {
-    if (confirm('Eintrag wirklich löschen?')) {
-      try {
-        await api(`/entries/${id}`, { method: 'DELETE' });
-        await refreshAfterChange();
-      } catch (e) {
-        onError(e.message);
-      }
+    try {
+      await api(`/entries/${id}`, { method: 'DELETE' });
+      setDeleteId(null);
+      await refreshAfterChange();
+    } catch (e) {
+      onError(e.message);
     }
   };
 
@@ -155,7 +156,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
             entry={entry}
             onEdit={setEditing}
             onDuplicate={duplicate}
-            onDelete={remove}
+            onDelete={setDeleteId}
             isReadOnly={isReadOnly}
           />
         ))}
@@ -253,6 +254,14 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
           onSave={save}
           onClose={() => setEditing(null)}
           isReadOnly={isReadOnly}
+        />
+      )}
+
+      {deleteId !== null && (
+        <ConfirmDialog
+          message="Eintrag wirklich löschen?"
+          onConfirm={() => remove(deleteId)}
+          onCancel={() => setDeleteId(null)}
         />
       )}
     </div>

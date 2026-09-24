@@ -45,16 +45,16 @@ export default function EntryCard({ entry, onEdit, onDuplicate, onDelete, isRead
         </p>
       </div>
       <div className="entry-actions">
-        <button className="icon" onClick={() => onEdit(entry)}>
+        <button className="icon" title="Ansehen" onClick={() => onEdit(entry)}>
           <Eye size={18} />
         </button>
         {!isReadOnly && (
-          <button className="icon" onClick={() => onDuplicate(entry)}>
+          <button className="icon" title="Duplizieren" onClick={() => onDuplicate(entry)}>
             <Copy size={18} />
           </button>
         )}
         {!isReadOnly && (
-          <button className="icon danger" onClick={() => onDelete(entry.id)}>
+          <button className="icon danger" title="Löschen" onClick={() => onDelete(entry.id)}>
             <Trash2 size={18} />
           </button>
         )}

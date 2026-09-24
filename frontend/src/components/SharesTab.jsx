@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Download, Plus, Trash2 } from 'lucide-react';
+import { Download, Plus, ShieldMinus, ShieldPlus, Trash2 } from 'lucide-react';
 import { api, downloadFile } from '../api';
 
 export default function SharesTab({ user, onError, onDataChanged }) {
@@ -106,6 +106,19 @@ export default function SharesTab({ user, onError, onDataChanged }) {
       setDayConfigMessage('Gespeichert.');
     } catch (e) {
       setDayConfigError(e.message);
+    }
+  };
+
+  const toggleAdmin = async u => {
+    const question = u.admin
+      ? `"${u.username}" die Admin-Rechte entziehen?`
+      : `"${u.username}" zum Admin machen?`;
+    if (!confirm(question)) return;
+    try {
+      await api(`/admin/users/${u.id}/admin`, { method: 'PUT', body: JSON.stringify({ admin: !u.admin }) });
+      await loadAllUsers();
+    } catch (e) {
+      setError(e.message);
     }
   };
 
@@ -274,10 +287,17 @@ export default function SharesTab({ user, onError, onDataChanged }) {
                       <strong>{u.username}</strong>
                       {u.admin ? <p className="muted">Admin</p> : null}
                     </div>
-                    {u.id !== user.id && !u.admin && (
-                      <button className="secondary" onClick={() => deleteUser(u)}>
-                        <Trash2 size={16} /> Löschen
-                      </button>
+                    {u.id !== user.id && (
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="secondary" onClick={() => toggleAdmin(u)}>
+                          {u.admin ? <><ShieldMinus size={16} /> Admin entziehen</> : <><ShieldPlus size={16} /> Zum Admin machen</>}
+                        </button>
+                        {!u.admin && (
+                          <button className="secondary" onClick={() => deleteUser(u)}>
+                            <Trash2 size={16} /> Löschen
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}

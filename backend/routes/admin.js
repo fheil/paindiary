@@ -42,6 +42,20 @@ router.get('/users', requireAdmin, (_req, res) => {
   res.json(db.prepare('SELECT id, username, admin, created_at FROM users ORDER BY username').all());
 });
 
+router.put('/users/:id/admin', requireAdmin, (req, res) => {
+  const targetId = Number(req.params.id);
+  if (targetId === req.user.id) {
+    return res.status(400).json({ error: 'Du kannst deinen eigenen Admin-Status nicht ändern.' });
+  }
+
+  const target = db.prepare('SELECT id FROM users WHERE id = ?').get(targetId);
+  if (!target) return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
+
+  const admin = req.body?.admin ? 1 : 0;
+  db.prepare('UPDATE users SET admin = ? WHERE id = ?').run(admin, targetId);
+  res.json({ id: targetId, admin: !!admin });
+});
+
 router.delete('/users/:id', requireAdmin, (req, res) => {
   const targetId = Number(req.params.id);
   if (targetId === req.user.id) {

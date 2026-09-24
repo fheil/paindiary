@@ -34,6 +34,7 @@ body {
   background: linear-gradient(180deg, #ecfeff 0%, #f1f5f9 60%);
   color: var(--slate-700);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ===== AUTH ===== */
@@ -450,6 +451,7 @@ nav button.active {
 
 main {
   flex: 1;
+  min-width: 0;
   padding: 2rem 1.5rem;
   max-width: 1200px;
   margin: 0 auto;

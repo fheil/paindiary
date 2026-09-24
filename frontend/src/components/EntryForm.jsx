@@ -14,6 +14,15 @@ const FIELD_CONFIG = [
 
 const FREE_TEXT_FIELDS = FIELD_CONFIG.filter(({ field }) => field !== 'medication').map(({ field }) => field);
 
+// occurred_at/pain_end_at are plain "YYYY-MM-DDTHH:mm" strings from
+// datetime-local inputs - treat them as local wall-clock time.
+function plusOneHour(dtLocal) {
+  const d = new Date(dtLocal);
+  d.setHours(d.getHours() + 1);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
   const [form, setForm] = useState(
     initial ? { ...initial, medication: initial.medication_name || initial.medication || '' } : blank()
@@ -47,7 +56,11 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
     e.preventDefault();
     setError('');
     try {
-      await onSave({ ...form, pain_level: Number(form.pain_level) });
+      await onSave({
+        ...form,
+        pain_level: Number(form.pain_level),
+        pain_end_at: form.pain_end_at || plusOneHour(form.occurred_at)
+      });
     } catch (err) {
       setError(err.message);
     }

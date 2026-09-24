@@ -37,10 +37,9 @@ export async function downloadFile(path, filename) {
 
 export const blank = () => {
   const start = new Date();
-  const end = new Date(start.getTime() + 60 * 60 * 1000);
   return {
     occurred_at: start.toISOString().slice(0, 16),
-    pain_end_at: end.toISOString().slice(0, 16),
+    pain_end_at: '',
     medication_taken_at: '',
     pain_level: 5,
     situation: '',

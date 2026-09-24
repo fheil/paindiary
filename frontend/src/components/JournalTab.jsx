@@ -91,7 +91,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
   const duplicate = entry => {
     setEditing({
       occurred_at: new Date().toISOString().slice(0, 16),
-      pain_end_at: entry.pain_end_at || '',
+      pain_end_at: '',
       medication_taken_at: entry.medication_taken_at || '',
       pain_level: entry.pain_level,
       situation: entry.situation || '',

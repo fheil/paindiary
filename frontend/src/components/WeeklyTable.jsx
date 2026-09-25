@@ -68,14 +68,14 @@ export default function WeeklyTable({ entries }) {
       g[s.dayIndex][s.hour] = { ...current, ...patch };
     };
 
-    // S + A: fill every hour from occurred_at through pain_end_at (inclusive).
+    // S + A: fill every hour of the half-open interval [occurred_at, pain_end_at).
     // Falls back to just occurred_at's own hour if there's no valid end.
     const MAX_SPAN_HOURS = 24 * 31; // guard against a mistyped end date far in the future
     for (const e of sorted) {
       const start = new Date(e.occurred_at);
       const end = e.pain_end_at ? new Date(e.pain_end_at) : null;
       const spanHours = end ? (end - start) / 3600000 : 0;
-      const validEnd = end && end >= start && spanHours <= MAX_SPAN_HOURS ? end : null;
+      const validEnd = end && end > start && spanHours <= MAX_SPAN_HOURS ? end : null;
 
       const painInfo = {
         pain: e.pain_level,
@@ -87,7 +87,7 @@ export default function WeeklyTable({ entries }) {
       if (validEnd) {
         let cursor = new Date(start);
         cursor.setMinutes(0, 0, 0);
-        while (cursor <= validEnd) {
+        while (cursor < validEnd) {
           setSlot(cursor, painInfo);
           cursor = new Date(cursor.getTime() + 3600000);
         }

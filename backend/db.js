@@ -91,6 +91,13 @@ const userColumns = db.prepare("PRAGMA table_info(users)").all().map(c => c.name
 if (!userColumns.includes('admin')) {
   db.exec('ALTER TABLE users ADD COLUMN admin INTEGER NOT NULL DEFAULT 0');
 }
+if (!userColumns.includes('keycloak_sub')) {
+  // Nullable, only set for users provisioned via Keycloak login. A plain
+  // UNIQUE index is fine here - SQLite treats NULLs as distinct from each
+  // other, so classic (non-Keycloak) users with NULL don't collide.
+  db.exec('ALTER TABLE users ADD COLUMN keycloak_sub TEXT');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_keycloak_sub ON users(keycloak_sub)');
+}
 
 const configColumns = db.prepare("PRAGMA table_info(config)").all().map(c => c.name);
 if (!configColumns.includes('registration_enabled')) {

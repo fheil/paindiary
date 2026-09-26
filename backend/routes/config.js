@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import db from '../db.js';
-import { authenticate } from '../auth-middleware.js';
+import { authenticate, isCurrentUserAdmin } from '../auth-middleware.js';
 
 const router = Router();
 router.use(authenticate);
@@ -10,8 +10,7 @@ router.get('/', (_req, res) => {
 });
 
 router.put('/', (req, res) => {
-  const dbUser = db.prepare('SELECT admin FROM users WHERE id = ?').get(req.user.id);
-  if (!dbUser?.admin) return res.status(403).json({ error: 'Nur für Admins.' });
+  if (!isCurrentUserAdmin(req)) return res.status(403).json({ error: 'Nur für Admins.' });
 
   const start = Number((req.body || {}).compact_start);
   const end = Number((req.body || {}).compact_end);

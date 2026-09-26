@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db.js';
-import { authenticate } from '../auth-middleware.js';
+import { authenticate, isCurrentUserAdmin } from '../auth-middleware.js';
 
 const router = Router();
 const secret = process.env.JWT_SECRET || 'change-this-secret-in-production';
@@ -36,8 +36,7 @@ router.get('/registration-status', (req, res) => {
 });
 
 router.put('/registration-status', authenticate, (req, res) => {
-  const dbUser = db.prepare('SELECT admin FROM users WHERE id = ?').get(req.user.id);
-  if (!dbUser?.admin) return res.status(403).json({ error: 'Nur für Admins.' });
+  if (!isCurrentUserAdmin(req)) return res.status(403).json({ error: 'Nur für Admins.' });
 
   const enabled = !!(req.body || {}).enabled;
   db.prepare('UPDATE config SET registration_enabled = ? WHERE id = 1').run(enabled ? 1 : 0);
@@ -58,18 +57,8 @@ router.put('/password', authenticate, (req, res) => {
 });
 
 // Aktuellen User anhand des Tokens zurückgeben
-router.get('/me', (req, res) => {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return res.status(401).json({ error: 'Kein Token vorhanden.' });
-  try {
-    const payload = jwt.verify(token, secret);
-    const user = db.prepare('SELECT id, username, admin FROM users WHERE id = ?').get(payload.id);
-    if (!user) return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
-    res.json({ user: { id: user.id, username: user.username, admin: !!user.admin } });
-  } catch (e) {
-    res.status(401).json({ error: 'Token ungültig oder abgelaufen.' });
-  }
+router.get('/me', authenticate, (req, res) => {
+  res.json({ user: { id: req.user.id, username: req.user.username, admin: isCurrentUserAdmin(req) } });
 });
 
 export default router;

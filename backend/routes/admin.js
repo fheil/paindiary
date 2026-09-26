@@ -3,14 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import archiver from 'archiver';
 import db, { dataDir } from '../db.js';
-import { authenticate } from '../auth-middleware.js';
+import { authenticate, isCurrentUserAdmin } from '../auth-middleware.js';
 
 const router = Router();
 router.use(authenticate);
 
 function requireAdmin(req, res, next) {
-  const dbUser = db.prepare('SELECT admin FROM users WHERE id = ?').get(req.user.id);
-  if (!dbUser?.admin) return res.status(403).json({ error: 'Nur für Admins.' });
+  if (!isCurrentUserAdmin(req)) return res.status(403).json({ error: 'Nur für Admins.' });
   next();
 }
 

@@ -13,7 +13,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - FRONTEND_URL=https://${DOMAIN}
       - AUTH_MODE=${AUTH_MODE}
-      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+      - KEYCLOAK_ISSUER=https://${KEYCLOAK_HOST}/realms/${KEYCLOAK_REALM}
       - KEYCLOAK_REALM=${KEYCLOAK_REALM}
       - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
       - KEYCLOAK_BACKEND_CLIENT_ID=${KEYCLOAK_BACKEND_CLIENT_ID}
@@ -44,7 +44,7 @@ services:
       args:
         VITE_API_URL: https://${DOMAIN}/api
         VITE_AUTH_MODE: ${AUTH_MODE}
-        VITE_KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+        VITE_KEYCLOAK_ISSUER: https://${KEYCLOAK_HOST}/realms/${KEYCLOAK_REALM}
         VITE_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
     container_name: paindiary-frontend
     restart: unless-stopped

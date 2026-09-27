@@ -3,6 +3,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db.js';
 import { authenticate, isCurrentUserAdmin } from '../auth-middleware.js';
+import { getKeycloakRegistrationAllowed, setKeycloakRegistrationAllowed } from '../keycloak-admin.js';
+
+const authMode = process.env.AUTH_MODE === 'keycloak' ? 'keycloak' : 'classic';
 
 const router = Router();
 const secret = process.env.JWT_SECRET || 'change-this-secret-in-production';
@@ -30,16 +33,35 @@ router.post('/login', (req, res) => {
   res.json({ token: tokenFor(user), user: { id: user.id, username: user.username, admin: !!user.admin } });
 });
 
-router.get('/registration-status', (req, res) => {
+router.get('/registration-status', async (req, res) => {
+  if (authMode === 'keycloak') {
+    try {
+      return res.json({ enabled: await getKeycloakRegistrationAllowed() });
+    } catch (e) {
+      console.error('Keycloak-Admin-API-Fehler:', e);
+      return res.status(502).json({ error: 'Keycloak nicht erreichbar.' });
+    }
+  }
   const { registration_enabled } = db.prepare('SELECT registration_enabled FROM config WHERE id = 1').get();
   res.json({ enabled: !!registration_enabled });
 });
 
-router.put('/registration-status', authenticate, (req, res) => {
+router.put('/registration-status', authenticate, async (req, res) => {
   if (!isCurrentUserAdmin(req)) return res.status(403).json({ error: 'Nur für Admins.' });
 
   const enabled = !!(req.body || {}).enabled;
-  db.prepare('UPDATE config SET registration_enabled = ? WHERE id = 1').run(enabled ? 1 : 0);
+
+  if (authMode === 'keycloak') {
+    try {
+      await setKeycloakRegistrationAllowed(enabled);
+    } catch (e) {
+      console.error('Keycloak-Admin-API-Fehler:', e);
+      return res.status(502).json({ error: 'Keycloak nicht erreichbar.' });
+    }
+  } else {
+    db.prepare('UPDATE config SET registration_enabled = ? WHERE id = 1').run(enabled ? 1 : 0);
+  }
+
   res.json({ enabled });
 });
 

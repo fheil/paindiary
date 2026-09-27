@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Download, Plus, ShieldMinus, ShieldPlus, Trash2 } from 'lucide-react';
 import { api, downloadFile } from '../api';
+import { isKeycloakMode } from '../keycloak';
 import ConfirmDialog from './ConfirmDialog';
+
+const keycloakAccountUrl = () => `${import.meta.env.VITE_KEYCLOAK_ISSUER}/account/`;
 
 export default function SharesTab({ user, onError, onDataChanged }) {
   const [users, setUsers] = useState([]);
@@ -233,7 +236,25 @@ export default function SharesTab({ user, onError, onDataChanged }) {
             </>
           )}
 
-          {activeSection === 'password' && (
+          {activeSection === 'password' && isKeycloakMode() && (
+            <>
+              <h2 style={{ marginTop: 0 }}>Passwort ändern</h2>
+              <p className="muted" style={{ marginTop: '0.5rem' }}>
+                Dein Passwort wird bei Keycloak verwaltet, nicht in paindiary selbst.
+              </p>
+              <a
+                href={keycloakAccountUrl()}
+                target="_blank"
+                rel="noreferrer"
+                className="primary"
+                style={{ display: 'inline-flex', marginTop: '1rem', textDecoration: 'none' }}
+              >
+                Passwort bei Keycloak ändern
+              </a>
+            </>
+          )}
+
+          {activeSection === 'password' && !isKeycloakMode() && (
             <>
               <h2 style={{ marginTop: 0 }}>Passwort ändern</h2>
               <form onSubmit={changePassword} style={{ marginTop: '1rem', maxWidth: '360px' }}>
@@ -306,6 +327,11 @@ export default function SharesTab({ user, onError, onDataChanged }) {
           {activeSection === 'registration' && user.admin && (
             <>
               <h2 style={{ marginTop: 0 }}>Registrierung erlauben</h2>
+              {isKeycloakMode() && (
+                <p className="muted" style={{ marginTop: '0.5rem' }}>
+                  Steuert Keycloaks Selbstregistrierung für den gesamten Realm, nicht nur für paindiary.
+                </p>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
                 <label className="switch">
                   <input type="checkbox" checked={regEnabled} onChange={toggleRegistration} />

@@ -65,3 +65,19 @@ export async function setKeycloakAdminRole(keycloakSub, grant) {
     body: JSON.stringify([{ id: role.id, name: role.name }])
   });
 }
+
+// Realm-wide "User registration" setting - not paindiary-specific, applies
+// to the whole realm (fine while paindiary is the only client in it).
+export async function getKeycloakRegistrationAllowed() {
+  const token = await getServiceAccountToken();
+  const realmRep = await adminFetch('', token);
+  return !!realmRep.registrationAllowed;
+}
+
+export async function setKeycloakRegistrationAllowed(enabled) {
+  const token = await getServiceAccountToken();
+  await adminFetch('', token, {
+    method: 'PUT',
+    body: JSON.stringify({ registrationAllowed: enabled })
+  });
+}

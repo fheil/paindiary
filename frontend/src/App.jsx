@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, BarChart3, Calendar, LogOut, Share2, Table } from 'lucide-react';
 import './styles.css';
 import { api } from './api';
+import { clearKeycloakTokens, handleRedirectCallback, isKeycloakMode } from './keycloak';
 import Auth from './components/Auth';
 import JournalTab from './components/JournalTab';
 import SharesTab from './components/SharesTab';
@@ -186,25 +187,33 @@ function MainApp({ user, logout }) {
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [authError, setAuthError] = useState('');
 
   useEffect(() => {
-    if (localStorage.token) {
-      api('/auth/me')
-        .then(d => setUser(d.user))
-        .catch(() => {
-          localStorage.removeItem('token');
-        });
-    }
+    (async () => {
+      try {
+        if (isKeycloakMode()) await handleRedirectCallback();
+        if (localStorage.token) {
+          const d = await api('/auth/me');
+          setUser(d.user);
+        }
+      } catch (e) {
+        clearKeycloakTokens();
+        localStorage.removeItem('token');
+        setAuthError(e.message);
+      }
+    })();
   }, []);
 
   if (!user) {
-    return <Auth onLogin={setUser} />;
+    return <Auth onLogin={setUser} error={authError} />;
   }
 
   return (
     <MainApp
       user={user}
       logout={() => {
+        clearKeycloakTokens();
         localStorage.removeItem('token');
         setUser(null);
       }}

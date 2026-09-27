@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
 import { api } from '../api';
+import { isKeycloakMode, startLogin } from '../keycloak';
 
-export default function Auth({ onLogin }) {
+export default function Auth({ onLogin, error: externalError }) {
   const [register, setRegister] = useState(false);
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [regEnabled, setRegEnabled] = useState(true);
+  const keycloakMode = isKeycloakMode();
 
   useEffect(() => {
+    if (keycloakMode) return;
     api('/auth/registration-status')
       .then(d => setRegEnabled(d.enabled))
       .catch(() => setRegEnabled(true));
-  }, []);
+  }, [keycloakMode]);
 
   const submit = async e => {
     e.preventDefault();
@@ -28,6 +31,29 @@ export default function Auth({ onLogin }) {
       setError(x.message);
     }
   };
+
+  if (keycloakMode) {
+    return (
+      <div className="auth">
+        <div className="auth-card">
+          <div className="brand-mark">
+            <Activity size={32} />
+          </div>
+          <h1>Schmerztagebuch</h1>
+          <p className="muted">Dein persönlicher Begleiter</p>
+          {externalError && <p style={{ color: 'var(--rose-500)', fontSize: '0.9rem', marginTop: '1rem' }}>❌ {externalError}</p>}
+          <button
+            type="button"
+            className="primary"
+            style={{ width: '100%', marginTop: '2rem' }}
+            onClick={startLogin}
+          >
+            Anmelden
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth">

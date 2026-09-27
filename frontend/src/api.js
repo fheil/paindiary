@@ -1,6 +1,9 @@
+import { ensureFreshToken } from './keycloak';
+
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 export async function api(path, options = {}) {
+  await ensureFreshToken();
   const res = await fetch(`${API}/api${path}`, {
     ...options,
     headers: {

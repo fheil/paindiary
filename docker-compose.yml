@@ -43,6 +43,9 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: https://${DOMAIN}/api
+        VITE_AUTH_MODE: ${AUTH_MODE}
+        VITE_KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+        VITE_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
     container_name: paindiary-frontend
     restart: unless-stopped
     networks:

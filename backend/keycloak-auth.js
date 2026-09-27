@@ -11,7 +11,7 @@ const clientId = process.env.KEYCLOAK_CLIENT_ID;
 const jwks = issuer ? createRemoteJWKSet(new URL(`${issuer}/protocol/openid-connect/certs`)) : null;
 
 export async function verifyKeycloakToken(token) {
-  const { payload } = await jwtVerify(token, jwks, { issuer });
+  const { payload } = await jwtVerify(token, jwks, { issuer, audience: clientId });
   return payload;
 }
 

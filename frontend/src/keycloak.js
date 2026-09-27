@@ -25,12 +25,29 @@ function storeTokens(data) {
   localStorage.token = data.access_token;
   localStorage.refreshToken = data.refresh_token;
   localStorage.tokenExpiresAt = String(Date.now() + data.expires_in * 1000);
+  if (data.id_token) localStorage.idToken = data.id_token;
 }
 
 export function clearKeycloakTokens() {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('tokenExpiresAt');
+  localStorage.removeItem('idToken');
+}
+
+// Ends the local session AND Keycloak's own SSO session (otherwise
+// "logging out" of paindiary silently re-authenticates you on the next
+// login attempt via Keycloak's still-active session cookie). Navigates
+// away, so nothing after calling this runs.
+export function logout() {
+  const idToken = localStorage.idToken;
+  clearKeycloakTokens();
+
+  const url = new URL(`${ISSUER}/protocol/openid-connect/logout`);
+  url.searchParams.set('client_id', CLIENT_ID);
+  url.searchParams.set('post_logout_redirect_uri', redirectUri());
+  if (idToken) url.searchParams.set('id_token_hint', idToken);
+  window.location.href = url.toString();
 }
 
 export async function startLogin() {

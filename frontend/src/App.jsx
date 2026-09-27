@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, BarChart3, Calendar, LogOut, Share2, Table } from 'lucide-react';
 import './styles.css';
 import { api } from './api';
-import { clearKeycloakTokens, handleRedirectCallback, isKeycloakMode } from './keycloak';
+import { clearKeycloakTokens, handleRedirectCallback, isKeycloakMode, logout as keycloakLogout } from './keycloak';
 import Auth from './components/Auth';
 import JournalTab from './components/JournalTab';
 import SharesTab from './components/SharesTab';
@@ -213,7 +213,7 @@ export default function App() {
     <MainApp
       user={user}
       logout={() => {
-        clearKeycloakTokens();
+        if (isKeycloakMode()) return keycloakLogout();
         localStorage.removeItem('token');
         setUser(null);
       }}

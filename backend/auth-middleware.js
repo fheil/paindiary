@@ -15,7 +15,8 @@ export async function authenticate(req, res, next) {
       const payload = await verifyKeycloakToken(token);
       req.user = resolveKeycloakUser(payload);
       return next();
-    } catch {
+    } catch (e) {
+      console.error('Keycloak-Token-Verifizierung fehlgeschlagen:', e);
       return res.status(401).json({ error: 'Ungültiges oder abgelaufenes Token.' });
     }
   }

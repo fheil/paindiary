@@ -52,6 +52,27 @@ function MainApp({ user, logout }) {
     displayedEntries.length ? Math.min(...displayedEntries.map(e => e.pain_level)) : '–'
   ), [displayedEntries]);
 
+  const daysSinceMedication = useMemo(() => {
+    const medDates = displayedEntries
+      .filter(e => e.medication_taken_at)
+      .map(e => new Date(e.medication_taken_at).getTime());
+    if (medDates.length === 0) return null;
+    return Math.floor((Date.now() - Math.max(...medDates)) / 86400000);
+  }, [displayedEntries]);
+
+  const medicationBadge = useMemo(() => {
+    if (daysSinceMedication === null) {
+      return { background: '#dcfce7', color: '#166534', text: 'Noch keine Medikamente erfasst' };
+    }
+    if (daysSinceMedication < 7) {
+      return { background: '#fee2e2', color: '#991b1b', text: `${daysSinceMedication} Tage ohne Medikamente` };
+    }
+    if (daysSinceMedication <= 30) {
+      return { background: '#fef3c7', color: '#92400e', text: `${daysSinceMedication} Tage ohne Medikamente` };
+    }
+    return { background: '#dcfce7', color: '#166534', text: `${daysSinceMedication} Tage ohne Medikamente` };
+  }, [daysSinceMedication]);
+
   return (
     <div className="app">
       <div className="app-top">
@@ -171,6 +192,22 @@ function MainApp({ user, logout }) {
                       </div>
                     );
                   })}
+                </div>
+
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.6rem',
+                    marginTop: '1.5rem',
+                    padding: '0.6rem 1.2rem',
+                    borderRadius: '999px',
+                    background: medicationBadge.background,
+                    color: medicationBadge.color,
+                    fontWeight: 600
+                  }}
+                >
+                  {medicationBadge.text}
                 </div>
               </div>
             )}

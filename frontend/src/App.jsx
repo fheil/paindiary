@@ -61,16 +61,10 @@ function MainApp({ user, logout }) {
   }, [displayedEntries]);
 
   const medicationBadge = useMemo(() => {
-    if (daysSinceMedication === null) {
-      return { background: '#dcfce7', color: '#166534', text: 'Noch keine Medikamente erfasst' };
-    }
-    if (daysSinceMedication < 7) {
-      return { background: '#fee2e2', color: '#991b1b', text: `${daysSinceMedication} Tage ohne Medikamente` };
-    }
-    if (daysSinceMedication <= 30) {
-      return { background: '#fef3c7', color: '#92400e', text: `${daysSinceMedication} Tage ohne Medikamente` };
-    }
-    return { background: '#dcfce7', color: '#166534', text: `${daysSinceMedication} Tage ohne Medikamente` };
+    if (daysSinceMedication === null) return { background: '#dcfce7', color: '#166534', days: null };
+    if (daysSinceMedication < 7) return { background: '#fee2e2', color: '#991b1b', days: daysSinceMedication };
+    if (daysSinceMedication <= 30) return { background: '#fef3c7', color: '#92400e', days: daysSinceMedication };
+    return { background: '#dcfce7', color: '#166534', days: daysSinceMedication };
   }, [daysSinceMedication]);
 
   return (
@@ -193,21 +187,51 @@ function MainApp({ user, logout }) {
                     );
                   })}
                 </div>
+              </div>
+            )}
 
+            {displayedEntries.length > 0 && (
+              <div
+                style={{
+                  marginTop: '2rem',
+                  background: '#fff',
+                  padding: '1.5rem',
+                  borderRadius: '14px',
+                  boxShadow: '0 6px 18px -10px rgba(15,118,110,.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1.5rem',
+                  flexWrap: 'wrap'
+                }}
+              >
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <h3 style={{ marginTop: 0 }}>Medikamentenfreie Zeit</h3>
+                  <p className="muted" style={{ marginTop: '0.5rem' }}>
+                    Tage seit der letzten Medikamenteneinnahme.
+                  </p>
+                </div>
                 <div
                   style={{
-                    display: 'inline-flex',
+                    width: '140px',
+                    height: '140px',
+                    flexShrink: 0,
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: '0.6rem',
-                    marginTop: '1.5rem',
-                    padding: '0.6rem 1.2rem',
-                    borderRadius: '999px',
+                    justifyContent: 'center',
+                    borderRadius: '28px',
                     background: medicationBadge.background,
                     color: medicationBadge.color,
-                    fontWeight: 600
+                    textAlign: 'center'
                   }}
                 >
-                  {medicationBadge.text}
+                  {medicationBadge.days !== null ? (
+                    <div>
+                      <div style={{ fontSize: '2.8rem', fontWeight: 800, lineHeight: 1 }}>{medicationBadge.days}</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, marginTop: '0.3rem' }}>Tage</div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '1rem', fontWeight: 700, padding: '0 0.5rem' }}>Keine Daten</div>
+                  )}
                 </div>
               </div>
             )}

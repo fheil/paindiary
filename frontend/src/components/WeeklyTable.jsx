@@ -51,7 +51,7 @@ export default function WeeklyTable({ entries }) {
   const weekStart = useMemo(() => addDays(startOfWeek(new Date()), weekOffset * 7), [weekOffset]);
   const weekEnd = addDays(weekStart, 6);
 
-  // grid[dayIndex][hour] = { pain, medCode, actCode, situation, bodyReaction }
+  // grid[dayIndex][hour] = { pain, medCodes, actCode, situation, bodyReaction }
   const grid = useMemo(() => {
     const g = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => null));
 
@@ -96,10 +96,18 @@ export default function WeeklyTable({ entries }) {
       }
     }
 
-    // M: placed at its own medication_taken_at hour, independent of the pain span.
+    // M: placed at its own medication_taken_at hour, independent of the pain
+    // span. A cell collects every distinct medication taken that hour (not
+    // just the last one), since more than one can be logged in the same hour.
     for (const e of sorted) {
       if (!e.medication_taken_at || !e.medication_code) continue;
-      setSlot(new Date(e.medication_taken_at), { medCode: e.medication_code });
+      const date = new Date(e.medication_taken_at);
+      const s = slotFor(date);
+      if (!s) continue;
+      const current = g[s.dayIndex][s.hour] || {};
+      const medCodes = current.medCodes ? [...current.medCodes] : [];
+      if (!medCodes.includes(e.medication_code)) medCodes.push(e.medication_code);
+      g[s.dayIndex][s.hour] = { ...current, medCodes };
     }
 
     return g;
@@ -119,7 +127,7 @@ export default function WeeklyTable({ entries }) {
     const usedCodes = new Set();
     for (const day of grid) {
       for (const cell of day) {
-        if (cell?.medCode) usedCodes.add(cell.medCode);
+        cell?.medCodes?.forEach(code => usedCodes.add(code));
       }
     }
     return medications.filter(m => usedCodes.has(m.code));
@@ -206,7 +214,7 @@ export default function WeeklyTable({ entries }) {
                         >
                           {cell?.pain ?? ''}
                         </td>
-                        <td>{cell?.medCode || ''}</td>
+                        <td>{cell?.medCodes?.join(', ') || ''}</td>
                         <td className="day-end">{cell?.actCode || ''}</td>
                       </React.Fragment>
                     );

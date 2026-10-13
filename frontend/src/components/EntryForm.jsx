@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { api, blank } from '../api';
+import { api, blank, toLocalDatetimeValue } from '../api';
 import AutocompleteField from './AutocompleteField';
 
 const FIELD_CONFIG = [
@@ -19,8 +19,7 @@ const FREE_TEXT_FIELDS = FIELD_CONFIG.filter(({ field }) => field !== 'medicatio
 function plusOneHour(dtLocal) {
   const d = new Date(dtLocal);
   d.setHours(d.getHours() + 1);
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return toLocalDatetimeValue(d);
 }
 
 export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {

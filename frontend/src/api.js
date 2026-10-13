@@ -38,10 +38,18 @@ export async function downloadFile(path, filename) {
   URL.revokeObjectURL(url);
 }
 
+// Formats a Date as "YYYY-MM-DDTHH:mm" using the device's local time (not
+// UTC) - matches what a datetime-local input expects/returns, so prefilled
+// timestamps reflect the user's own timezone, not the server's.
+export function toLocalDatetimeValue(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export const blank = () => {
   const start = new Date();
   return {
-    occurred_at: start.toISOString().slice(0, 16),
+    occurred_at: toLocalDatetimeValue(start),
     pain_end_at: '',
     medication_taken_at: '',
     pain_level: 5,

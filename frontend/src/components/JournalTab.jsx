@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, ChevronLeft, Plus } from 'lucide-react';
-import { api, blank } from '../api';
+import { api, blank, toLocalDatetimeValue } from '../api';
 import EntryForm from './EntryForm';
 import EntryCard from './EntryCard';
 import ConfirmDialog from './ConfirmDialog';
@@ -92,7 +92,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
 
   const duplicate = entry => {
     setEditing({
-      occurred_at: new Date().toISOString().slice(0, 16),
+      occurred_at: toLocalDatetimeValue(new Date()),
       pain_end_at: '',
       medication_taken_at: entry.medication_taken_at || '',
       pain_level: entry.pain_level,

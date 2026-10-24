@@ -62,7 +62,7 @@ router.put('/users/:id/admin', requireAdmin, async (req, res) => {
     return res.status(400).json({ error: 'Du kannst deinen eigenen Admin-Status nicht ändern.' });
   }
 
-  const target = db.prepare('SELECT id, keycloak_sub FROM users WHERE id = ?').get(targetId);
+  const target = db.prepare('SELECT id, admin, keycloak_sub FROM users WHERE id = ?').get(targetId);
   if (!target) return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
 
   const admin = !!req.body?.admin;
@@ -70,12 +70,22 @@ router.put('/users/:id/admin', requireAdmin, async (req, res) => {
   if (authMode === 'keycloak') {
     if (!target.keycloak_sub) return res.status(400).json({ error: 'Nutzer hat kein Keycloak-Konto.' });
     try {
+      if (!admin) {
+        const adminSubs = await getKeycloakAdminSubs();
+        if (adminSubs.has(target.keycloak_sub) && adminSubs.size <= 1) {
+          return res.status(400).json({ error: 'Der letzte Admin kann nicht entfernt werden.' });
+        }
+      }
       await setKeycloakAdminRole(target.keycloak_sub, admin);
     } catch (e) {
       console.error('Keycloak-Admin-API-Fehler:', e);
       return res.status(502).json({ error: 'Keycloak nicht erreichbar.' });
     }
   } else {
+    if (!admin && target.admin) {
+      const { c } = db.prepare('SELECT COUNT(*) AS c FROM users WHERE admin = 1').get();
+      if (c <= 1) return res.status(400).json({ error: 'Der letzte Admin kann nicht entfernt werden.' });
+    }
     db.prepare('UPDATE users SET admin = ? WHERE id = ?').run(admin ? 1 : 0, targetId);
   }
 

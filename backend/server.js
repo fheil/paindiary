@@ -17,6 +17,7 @@ import activitiesRoutes from './routes/activities.js';
 import medicationsRoutes from './routes/medications.js';
 import adminRoutes from './routes/admin.js';
 import configRoutes from './routes/config.js';
+import iconsRoutes from './routes/icons.js';
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/activities', activitiesRoutes);
 app.use('/api/medications', medicationsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/icons', iconsRoutes);
 
 // Error-Handler
 app.use((err, _req, res, _next) => { 

@@ -1,7 +1,10 @@
 :root {
-  --teal-900: #0b3a3a;
-  --teal-700: #0f766e;
-  --teal-50: #f0fdfa;
+  /* The one brand color. Overridden at runtime from the ACCENT_COLOR env var
+     (see theme.js); every other accent shade below is derived from it. */
+  --accent: #0f766e;
+  --teal-900: color-mix(in srgb, var(--accent) 55%, black);
+  --teal-700: var(--accent);
+  --teal-50: color-mix(in srgb, var(--accent) 6%, white);
   --slate-100: #f1f5f9;
   --slate-400: #94a3b8;
   --slate-700: #334155;
@@ -31,7 +34,7 @@
 body {
   margin: 0;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: linear-gradient(180deg, #ecfeff 0%, #f1f5f9 60%);
+  background: linear-gradient(180deg, var(--teal-50) 0%, #f1f5f9 60%);
   color: var(--slate-700);
   min-height: 100vh;
   overflow-x: hidden;
@@ -49,7 +52,7 @@ body {
   background: #fff;
   padding: 2.5rem;
   border-radius: 20px;
-  box-shadow: 0 30px 80px -20px rgba(15, 118, 110, 0.35);
+  box-shadow: 0 30px 80px -20px color-mix(in srgb, var(--teal-700) 35%, transparent);
   width: min(420px, 100%);
   text-align: center;
 }
@@ -58,7 +61,7 @@ body {
   width: 60px;
   height: 60px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--teal-700), #14b8a6);
+  background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
   color: #fff;
   display: grid;
   place-items: center;
@@ -180,13 +183,13 @@ input[type='range']::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--teal-700);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--teal-700) 30%, transparent);
   transition: all 0.2s;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.5);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--teal-700) 50%, transparent);
 }
 
 input[type='range']::-moz-range-thumb {
@@ -196,13 +199,13 @@ input[type='range']::-moz-range-thumb {
   background: var(--teal-700);
   cursor: pointer;
   border: none;
-  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--teal-700) 30%, transparent);
   transition: all 0.2s;
 }
 
 input[type='range']::-moz-range-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.5);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--teal-700) 50%, transparent);
 }
 
 input[type='range']::-moz-range-track {
@@ -278,7 +281,7 @@ button {
 .primary:hover {
   background: var(--teal-900);
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(15, 118, 110, 0.3);
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--teal-700) 30%, transparent);
 }
 
 .primary.wide {
@@ -504,7 +507,7 @@ main {
 }
 
 .autocomplete-item:hover {
-  background: #f0fdfa;
+  background: var(--teal-50);
   color: var(--teal-700);
   font-weight: 500;
 }
@@ -527,7 +530,7 @@ main {
   width: min(640px, 100%);
   max-height: 92vh;
   overflow-y: auto;
-  box-shadow: 0 30px 80px -20px rgba(15, 118, 110, 0.5);
+  box-shadow: 0 30px 80px -20px color-mix(in srgb, var(--teal-700) 50%, transparent);
 }
 
 .modal-head {
@@ -560,7 +563,7 @@ main {
   background: #fff;
   border-radius: 18px;
   padding: 0.6rem;
-  box-shadow: 0 20px 40px -25px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 20px 40px -25px color-mix(in srgb, var(--teal-700) 25%, transparent);
 }
 
 .entry {
@@ -692,7 +695,7 @@ main {
   background: #fff;
   padding: 1rem 1.2rem;
   border-radius: 14px;
-  box-shadow: 0 6px 18px -10px rgba(15, 118, 110, 0.2);
+  box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--teal-700) 20%, transparent);
 }
 
 .stats span {
@@ -724,7 +727,7 @@ main {
   background: #fff;
   padding: 1.2rem;
   border-radius: 14px;
-  box-shadow: 0 6px 18px -10px rgba(15, 118, 110, 0.2);
+  box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--teal-700) 20%, transparent);
   border: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
@@ -736,7 +739,7 @@ main {
 .share-card:hover {
   background: #f9fafb;
   border-color: #d1d5db;
-  box-shadow: 0 8px 20px -10px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--teal-700) 25%, transparent);
 }
 
 .share-card > div {
@@ -878,7 +881,7 @@ main {
   background: #fff;
   border-radius: 18px;
   padding: 2rem;
-  box-shadow: 0 20px 40px -25px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 20px 40px -25px color-mix(in srgb, var(--teal-700) 25%, transparent);
 }
 
 /* ===== OPTIONS LAYOUT ===== */
@@ -917,7 +920,7 @@ main {
   background: #fff;
   color: var(--teal-700);
   font-weight: 700;
-  box-shadow: 0 6px 18px -10px rgba(15, 118, 110, 0.2);
+  box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--teal-700) 20%, transparent);
 }
 
 .options-panel {
@@ -927,7 +930,7 @@ main {
   background: #fff;
   border-radius: 18px;
   padding: 2rem;
-  box-shadow: 0 20px 40px -25px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 20px 40px -25px color-mix(in srgb, var(--teal-700) 25%, transparent);
 }
 
 /* ===== RESPONSIVE ===== */
@@ -1081,7 +1084,7 @@ main {
   overflow-x: auto;
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 6px 18px -10px rgba(15, 118, 110, 0.2);
+  box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--teal-700) 20%, transparent);
   margin-top: 1rem;
 }
 
@@ -1149,7 +1152,7 @@ main {
   background: #fff;
   border-radius: 14px;
   padding: 1rem 1.25rem;
-  box-shadow: 0 6px 18px -10px rgba(15, 118, 110, 0.2);
+  box-shadow: 0 6px 18px -10px color-mix(in srgb, var(--teal-700) 20%, transparent);
 }
 
 .legend-box h3 {

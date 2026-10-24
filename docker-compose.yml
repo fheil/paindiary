@@ -12,6 +12,7 @@ services:
       - PORT=${PORT}
       - JWT_SECRET=${JWT_SECRET}
       - FRONTEND_URL=https://${DOMAIN}
+      - ACCENT_COLOR=${ACCENT_COLOR}
       - AUTH_MODE=${AUTH_MODE}
       - KEYCLOAK_ISSUER=https://${KEYCLOAK_HOST}/realms/${KEYCLOAK_REALM}
       - KEYCLOAK_REALM=${KEYCLOAK_REALM}

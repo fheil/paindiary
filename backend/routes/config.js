@@ -1,15 +1,16 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { authenticate, isCurrentUserAdmin } from '../auth-middleware.js';
+import { accentFromEnv as accentColor } from '../accent.js';
 
 const router = Router();
-router.use(authenticate);
 
+// Public - the accent color is also needed on the (unauthenticated) login page.
 router.get('/', (_req, res) => {
-  res.json(db.prepare('SELECT compact_start, compact_end FROM config WHERE id = 1').get());
+  res.json({ ...db.prepare('SELECT compact_start, compact_end FROM config WHERE id = 1').get(), accentColor });
 });
 
-router.put('/', (req, res) => {
+router.put('/', authenticate, (req, res) => {
   if (!isCurrentUserAdmin(req)) return res.status(403).json({ error: 'Nur für Admins.' });
 
   const start = Number((req.body || {}).compact_start);

@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import db from './db.js';
 import { verifyKeycloakToken, resolveKeycloakUser } from './keycloak-auth.js';
 
-const secret = process.env.JWT_SECRET || 'change-this-secret-in-production';
+const secret = process.env.JWT_SECRET;
 const authMode = process.env.AUTH_MODE === 'keycloak' ? 'keycloak' : 'classic';
 
 export async function authenticate(req, res, next) {

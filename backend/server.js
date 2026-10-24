@@ -1,6 +1,15 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Fail fast rather than silently signing/verifying tokens with a secret
+// that's hardcoded (and public, since this repo is public) in the source.
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET ist nicht gesetzt. Server wird nicht gestartet.');
+  process.exit(1);
+}
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import entriesRoutes from './routes/entries.js';
 import sharesRoutes from './routes/shares.js';
@@ -9,9 +18,12 @@ import medicationsRoutes from './routes/medications.js';
 import adminRoutes from './routes/admin.js';
 import configRoutes from './routes/config.js';
 
-dotenv.config();
-
 const app = express();
+
+// Backend only ever sits behind exactly one hop (Traefik, same Docker
+// network) - trust its X-Forwarded-For so req.ip (and rate limiting) sees
+// the real client IP instead of Traefik's internal address.
+app.set('trust proxy', 1);
 
 // CORS angepasst für Traefik
 const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:8040';

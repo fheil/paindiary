@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 import db from '../db.js';
 import { authenticate, isCurrentUserAdmin } from '../auth-middleware.js';
 import { getKeycloakRegistrationAllowed, setKeycloakRegistrationAllowed } from '../keycloak-admin.js';
@@ -8,10 +9,21 @@ import { getKeycloakRegistrationAllowed, setKeycloakRegistrationAllowed } from '
 const authMode = process.env.AUTH_MODE === 'keycloak' ? 'keycloak' : 'classic';
 
 const router = Router();
-const secret = process.env.JWT_SECRET || 'change-this-secret-in-production';
+const secret = process.env.JWT_SECRET;
 const tokenFor = user => jwt.sign({ id: user.id, username: user.username }, secret, { expiresIn: '7d' });
 
-router.post('/register', (req, res) => {
+// Only meaningful in classic mode - Keycloak has its own brute-force
+// protection. Shared across login/register/password since they're all
+// credential-guessing targets.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Zu viele Versuche. Bitte später erneut versuchen.' }
+});
+
+router.post('/register', authLimiter, (req, res) => {
   const { registration_enabled } = db.prepare('SELECT registration_enabled FROM config WHERE id = 1').get();
   if (!registration_enabled) {
     return res.status(403).json({ error: 'Registrierung ist derzeit deaktiviert.' });
@@ -26,7 +38,7 @@ router.post('/register', (req, res) => {
   } catch (e) { res.status(e.code === 'SQLITE_CONSTRAINT_UNIQUE' ? 409 : 500).json({ error: e.code === 'SQLITE_CONSTRAINT_UNIQUE' ? 'Benutzername bereits vergeben.' : 'Registrierung fehlgeschlagen.' }); }
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', authLimiter, (req, res) => {
   const { username, password } = req.body || {};
   const user = db.prepare('SELECT id, username, password_hash, admin FROM users WHERE username = ?').get(username?.trim());
   if (!user || !bcrypt.compareSync(password || '', user.password_hash)) return res.status(401).json({ error: 'Ungültige Zugangsdaten.' });
@@ -65,7 +77,7 @@ router.put('/registration-status', authenticate, async (req, res) => {
   res.json({ enabled });
 });
 
-router.put('/password', authenticate, (req, res) => {
+router.put('/password', authenticate, authLimiter, (req, res) => {
   const { currentPassword, newPassword } = req.body || {};
   if (typeof newPassword !== 'string' || newPassword.length < 8) {
     return res.status(400).json({ error: 'Neues Passwort muss mindestens 8 Zeichen haben.' });

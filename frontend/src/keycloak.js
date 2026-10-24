@@ -106,6 +106,13 @@ export async function handleRedirectCallback() {
   return true;
 }
 
+// Shared in-flight refresh so concurrent callers (api() fires several
+// requests in parallel on tab load) await the same attempt instead of each
+// starting their own - Keycloak's refresh tokens are one-time-use, so
+// multiple simultaneous refreshes would race and the "losing" ones would
+// wipe out the session a "winning" one just validly refreshed.
+let refreshPromise = null;
+
 // Refreshes the access token if it's missing or close to expiry. No-op
 // outside Keycloak mode, so classic-mode deployments never touch this.
 export async function ensureFreshToken() {
@@ -114,13 +121,20 @@ export async function ensureFreshToken() {
   const expiresAt = Number(localStorage.tokenExpiresAt || 0);
   if (Date.now() < expiresAt - 10_000) return;
 
-  try {
-    storeTokens(await requestToken({
-      grant_type: 'refresh_token',
-      client_id: CLIENT_ID,
-      refresh_token: localStorage.refreshToken
-    }));
-  } catch {
-    clearKeycloakTokens();
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        storeTokens(await requestToken({
+          grant_type: 'refresh_token',
+          client_id: CLIENT_ID,
+          refresh_token: localStorage.refreshToken
+        }));
+      } catch {
+        clearKeycloakTokens();
+      } finally {
+        refreshPromise = null;
+      }
+    })();
   }
+  await refreshPromise;
 }

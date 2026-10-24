@@ -24,7 +24,10 @@ function plusOneHour(dtLocal) {
 
 const buildForm = initial => (initial ? { ...initial, medication: initial.medication_name || initial.medication || '' } : blank());
 
-export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
+// How long the pain-level slider can sit idle before it autosaves on its own.
+const PAIN_LEVEL_AUTOSAVE_MS = 2000;
+
+export default function EntryForm({ initial, onSave, onSilentSave, onClose, isReadOnly }) {
   const [form, setForm] = useState(() => buildForm(initial));
   const initialFormRef = useRef(buildForm(initial));
   const [suggestions, setSuggestions] = useState({
@@ -35,7 +38,36 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
   const [error, setError] = useState('');
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
 
-  const isDirty = Object.keys(form).some(k => String(form[k] ?? '') !== String(initialFormRef.current[k] ?? ''));
+  // Only an already-saved entry has an id to PUT a quiet pain-level
+  // update to - a brand-new entry's pain level is just part of the
+  // regular unsaved-changes flow below.
+  const entryId = initial?.id ?? null;
+  const lastSavedPainLevelRef = useRef(initialFormRef.current.pain_level);
+  const painLevelTimerRef = useRef(null);
+
+  const flushPainLevel = async value => {
+    if (painLevelTimerRef.current) {
+      clearTimeout(painLevelTimerRef.current);
+      painLevelTimerRef.current = null;
+    }
+    if (!entryId || isReadOnly || String(value) === String(lastSavedPainLevelRef.current)) return;
+    lastSavedPainLevelRef.current = value;
+    try {
+      await api(`/entries/${entryId}`, { method: 'PUT', body: JSON.stringify({ pain_level: Number(value) }) });
+      onSilentSave?.();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => () => { if (painLevelTimerRef.current) clearTimeout(painLevelTimerRef.current); }, []);
+
+  // pain_level has its own quiet autosave (above) when editing an existing
+  // entry, so it shouldn't also trigger the "unsaved changes" dialog below.
+  const isDirty = Object.keys(form).some(k => {
+    if (k === 'pain_level' && entryId) return false;
+    return String(form[k] ?? '') !== String(initialFormRef.current[k] ?? '');
+  });
 
   useEffect(() => {
     api('/entries')
@@ -75,9 +107,16 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
     await doSave();
   };
 
+  // Every close path funnels through here so a pending (debounced)
+  // pain-level autosave is never silently dropped by closing the form.
+  const closeForm = () => {
+    flushPainLevel(form.pain_level);
+    onClose();
+  };
+
   const requestClose = () => {
     if (isDirty) setShowUnsavedDialog(true);
-    else onClose();
+    else closeForm();
   };
 
   return (
@@ -132,7 +171,13 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
             min="0"
             max="10"
             value={form.pain_level}
-            onChange={e => set('pain_level', e.target.value)}
+            onChange={e => {
+              const value = e.target.value;
+              set('pain_level', value);
+              if (painLevelTimerRef.current) clearTimeout(painLevelTimerRef.current);
+              painLevelTimerRef.current = setTimeout(() => flushPainLevel(value), PAIN_LEVEL_AUTOSAVE_MS);
+            }}
+            onBlur={e => flushPainLevel(e.target.value)}
             disabled={isReadOnly}
           />
         </label>
@@ -184,7 +229,7 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
               <button type="button" className="secondary" onClick={() => setShowUnsavedDialog(false)}>
                 Zurück
               </button>
-              <button type="button" className="primary danger" onClick={onClose}>
+              <button type="button" className="primary danger" onClick={closeForm}>
                 Verwerfen
               </button>
               <button
@@ -193,7 +238,7 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
                 onClick={async () => {
                   const ok = await doSave();
                   setShowUnsavedDialog(false);
-                  if (ok) onClose();
+                  if (ok) closeForm();
                 }}
               >
                 Speichern

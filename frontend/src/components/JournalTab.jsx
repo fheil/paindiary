@@ -252,6 +252,7 @@ export default function JournalTab({ user, viewingUserId, isReadOnly, onError, o
         <EntryForm
           initial={editing}
           onSave={save}
+          onSilentSave={refreshAfterChange}
           onClose={() => setEditing(null)}
           isReadOnly={isReadOnly}
         />

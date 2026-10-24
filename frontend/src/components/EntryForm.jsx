@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { api, blank, toLocalDatetimeValue } from '../api';
 import AutocompleteField from './AutocompleteField';
@@ -22,16 +22,20 @@ function plusOneHour(dtLocal) {
   return toLocalDatetimeValue(d);
 }
 
+const buildForm = initial => (initial ? { ...initial, medication: initial.medication_name || initial.medication || '' } : blank());
+
 export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
-  const [form, setForm] = useState(
-    initial ? { ...initial, medication: initial.medication_name || initial.medication || '' } : blank()
-  );
+  const [form, setForm] = useState(() => buildForm(initial));
+  const initialFormRef = useRef(buildForm(initial));
   const [suggestions, setSuggestions] = useState({
     medication: [], situation: [], body_reaction: [], thoughts: [], feeling: [], behavior: []
   });
   const [activities, setActivities] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [error, setError] = useState('');
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+
+  const isDirty = Object.keys(form).some(k => String(form[k] ?? '') !== String(initialFormRef.current[k] ?? ''));
 
   useEffect(() => {
     api('/entries')
@@ -51,8 +55,7 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const submit = async e => {
-    e.preventDefault();
+  const doSave = async () => {
     setError('');
     try {
       await onSave({
@@ -62,11 +65,23 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
       });
     } catch (err) {
       setError(err.message);
+      return false;
     }
+    return true;
+  };
+
+  const submit = async e => {
+    e.preventDefault();
+    await doSave();
+  };
+
+  const requestClose = () => {
+    if (isDirty) setShowUnsavedDialog(true);
+    else onClose();
   };
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <div className="overlay" onClick={requestClose}>
       <form className="modal" onSubmit={submit} onClick={e => e.stopPropagation()}>
         <div className="modal-head">
           <div>
@@ -74,7 +89,7 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
             <h2>{initial?.id ? 'Eintrag bearbeiten' : 'Neuer Eintrag'}</h2>
             {isReadOnly && <p style={{ color: '#f59e0b', fontSize: '0.9rem', marginTop: '0.5rem' }}>👁️ Nur-Lesen</p>}
           </div>
-          <button type="button" className="icon" onClick={onClose}>
+          <button type="button" className="icon" onClick={requestClose}>
             <X />
           </button>
         </div>
@@ -154,12 +169,39 @@ export default function EntryForm({ initial, onSave, onClose, isReadOnly }) {
         {error && <p style={{ color: 'var(--rose-500)', fontSize: '0.9rem' }}>❌ {error}</p>}
 
         <div className="actions">
-          <button type="button" className="secondary" onClick={onClose}>
+          <button type="button" className="secondary" onClick={requestClose}>
             Abbrechen
           </button>
           {!isReadOnly && <button className="primary">Speichern</button>}
         </div>
       </form>
+
+      {showUnsavedDialog && (
+        <div className="overlay" onClick={e => { e.stopPropagation(); setShowUnsavedDialog(false); }}>
+          <div className="modal" style={{ width: 'min(420px, 100%)', padding: '1.5rem' }} onClick={e => e.stopPropagation()}>
+            <p style={{ margin: 0 }}>Du hast ungespeicherte Änderungen. Was möchtest du tun?</p>
+            <div className="actions">
+              <button type="button" className="secondary" onClick={() => setShowUnsavedDialog(false)}>
+                Zurück
+              </button>
+              <button type="button" className="primary danger" onClick={onClose}>
+                Verwerfen
+              </button>
+              <button
+                type="button"
+                className="primary"
+                onClick={async () => {
+                  const ok = await doSave();
+                  setShowUnsavedDialog(false);
+                  if (ok) onClose();
+                }}
+              >
+                Speichern
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

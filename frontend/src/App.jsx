@@ -33,6 +33,16 @@ function MainApp({ user, logout }) {
     load();
   }, []);
 
+  // A long-lived tab (esp. a backgrounded PWA on iOS) never refetches on
+  // its own - without this, data (and anything computed from it, like the
+  // days-without-medication badge) silently freezes at whatever it was on
+  // the last real page load, no matter how much time actually passes.
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+
   const isReadOnly = viewingUserId !== null;
   const displayedEntries = viewingUserId !== null
     ? entries.filter(e => e.user_id === viewingUserId)
